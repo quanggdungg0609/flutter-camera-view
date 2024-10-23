@@ -3,6 +3,9 @@ import "dart:math";
 import "dart:typed_data";
 
 import "package:dio/dio.dart";
+import "package:flutter_camera_view/features/login/data/datasources/local.datasource.dart";
+import "package:flutter_camera_view/features/login/data/models/tokens.model.dart";
+import "package:flutter_camera_view/features/login/domain/entities/tokens.entity.dart";
 import "package:flutter_dotenv/flutter_dotenv.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
 import "package:path_provider/path_provider.dart" as path_provider;
@@ -31,7 +34,6 @@ Future<void> initializeDependencies() async {
 
   // create box of hive
   sl.registerSingletonAsync<BoxCollection>(() async {
-    Uint8List key = generateRandomKey();
     var collection = await BoxCollection.open(
       "CameraViewApp",
       {
@@ -42,17 +44,78 @@ Future<void> initializeDependencies() async {
     return collection;
   });
 
-  sl<BoxCollection>().openBox("settings");
+  sl.registerSingleton<LocalDataSource>(
+    LocalDataSourceImpl(
+      secureStorage: sl<FlutterSecureStorage>(),
+      hiveCollections: sl<BoxCollection>(),
+    ),
+  );
 
-  Dio dio = Dio();
-  dio.options.baseUrl = dotenv.env["API_URL"]!;
-}
+  sl.registerLazySingleton<Dio>(() {
+    Dio dio = Dio();
+    dio.options.baseUrl = dotenv.env["API_URL"]!;
 
-Uint8List generateRandomKey() {
-  final Random random = Random.secure();
-  final Uint8List key = Uint8List(16);
-  for (int i = 0; i < 16; i++) {
-    key[i] = random.nextInt(256); // Tạo số ngẫu nhiên từ 0 đến 255
-  }
-  return key;
+    // Add an interceptor to handle automatic token refresh only for requests with Bearer Auth
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onError: (DioException e, ErrorInterceptorHandler handler) async {
+          if (e.response?.statusCode == 401 && e.response?.data["code"] == "token_not_valid") {
+            final authHeader = (e.requestOptions.headers["Authorization"] as String?);
+
+            if (authHeader?.startsWith("Bearer") == true) {
+              RefreshToken? token = await sl<LocalDataSource>().getRefreshToken();
+
+              // If refresh token is not available, reject the request with an appropriate error
+              if (token == null) {
+                return handler.reject(DioException(
+                  requestOptions: e.requestOptions,
+                  response: Response(
+                    requestOptions: e.requestOptions,
+                    statusCode: 401,
+                    data: {"detail": "Refresh token not available, please login again"},
+                  ),
+                  type: DioExceptionType.badResponse,
+                ));
+              }
+              try {
+                final refreshResponse = await dio.post(
+                  "/auth/refresh/",
+                  data: {"refresh": token.value},
+                );
+
+                if (refreshResponse.statusCode == 200) {
+                  final newAccessToken = refreshResponse.data["access"];
+
+                  AccessTokenModel accessToken = AccessTokenModel(value: newAccessToken);
+                  await sl<LocalDataSource>().updateAccessToken(accessToken);
+                  // Retry the original request with the new access token
+                  final retryOptions = e.requestOptions;
+                  retryOptions.headers['Authorization'] = 'Bearer $newAccessToken';
+
+                  final retryResponse = await dio.fetch(retryOptions);
+                  // return the retried response
+                  return handler.resolve(retryResponse);
+                }
+              } catch (refreshError) {
+                // handle refresh token failure or network issues
+                return handler.reject(
+                  DioException(
+                    requestOptions: e.requestOptions,
+                    response: Response(
+                      requestOptions: e.requestOptions,
+                      statusCode: 401,
+                      data: {"detail": "Failed to refresh token, please login again"},
+                    ),
+                    type: DioExceptionType.badResponse,
+                  ),
+                );
+              }
+            }
+          }
+          return handler.next(e);
+        },
+      ),
+    );
+    return dio;
+  });
 }

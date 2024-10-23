@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_camera_view/core/constants/constants.dart';
 import 'package:flutter_camera_view/injection_container.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -19,8 +20,8 @@ class _LoginPagesState extends State<LoginPages> {
   void getData() async {
     final storage = sl<FlutterSecureStorage>();
 
-    final accountValue = await storage.read(key: "account");
-    final passwordValue = await storage.read(key: "password");
+    final accountValue = await storage.read(key: ACCOUNT);
+    final passwordValue = await storage.read(key: PASSWORD);
 
     if (accountValue != null || passwordValue != null) {
       account.text = accountValue ?? "";
