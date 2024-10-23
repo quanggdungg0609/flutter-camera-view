@@ -47,6 +47,7 @@ dependencies:
   hive: ^2.2.3
   path_provider: ^2.1.4
   flutter_secure_storage: ^9.2.2
+  dartz: ^0.10.1
 
   
   
