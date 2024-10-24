@@ -23,4 +23,14 @@ abstract class UserInfo extends Equatable {
         firstName,
         lastName,
       ];
+
+  Map<String, dynamic> toMap() {
+    return {
+      "userName": userName,
+      "email": email,
+      "role": role,
+      "firstName": firstName,
+      "lastName": lastName,
+    };
+  }
 }

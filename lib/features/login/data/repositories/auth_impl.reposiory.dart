@@ -22,10 +22,18 @@ class AuthRepositoryImpl implements AuthRepository {
 
       // save access token and refresh token into localDatasource
       await localDataSource.saveToken(loginResponse.accessToken, loginResponse.refreshToken);
+      // save user Info into localDataSource
+      await localDataSource.saveUserInfo(loginResponse.userInfo);
 
       return Right(loginResponse.userInfo);
     } on FailedToLoginException {
       return Left(LoginFailure());
     }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> saveAccountInfo(String account, String password) {
+    // TODO: implement saveAccountInfo
+    throw UnimplementedError();
   }
 }

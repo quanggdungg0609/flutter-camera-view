@@ -4,4 +4,6 @@ import 'package:flutter_camera_view/features/login/domain/entities/user_info.ent
 
 abstract class AuthRepository {
   Future<Either<Failure, UserInfo>> login(String account, String password);
+
+  Future<Either<Failure, Unit>> saveAccountInfo(String account, String password);
 }

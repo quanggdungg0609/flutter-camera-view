@@ -38,7 +38,7 @@ Future<void> initializeDependencies() async {
       "CameraViewApp",
       {
         "settings",
-        "users",
+        "userInfo",
       },
     );
     return collection;
