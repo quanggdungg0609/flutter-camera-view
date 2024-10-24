@@ -7,3 +7,9 @@ abstract class Failure extends Equatable {
 
 // General failures
 class LoginFailure extends Failure {}
+
+class SaveAccountInfoFailure extends Failure {}
+
+class ClearAccountInfoFailure extends Failure {}
+
+class FetchAccountInfoFailure extends Failure {}
