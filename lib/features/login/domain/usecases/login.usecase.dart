@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import 'package:flutter_camera_view/core/failures/auth.failure.dart';
+import 'package:flutter_camera_view/core/failures/failure.dart';
 import 'package:flutter_camera_view/core/usecase.dart';
 import 'package:flutter_camera_view/features/login/domain/repositories/auth.repository.dart';
 

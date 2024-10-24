@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
-import 'package:flutter_camera_view/core/failures/auth.failure.dart';
+import 'package:flutter_camera_view/core/failures/failure.dart';
 import 'package:flutter_camera_view/core/usecase.dart';
-import 'package:flutter_camera_view/features/login/domain/repositories/auth.repository.dart';
+import 'package:flutter_camera_view/features/login/domain/repositories/account_info.repository.dart';
 
 class SaveAccountInfoParams {
   final String accountID;
@@ -11,7 +11,7 @@ class SaveAccountInfoParams {
 }
 
 class SaveAccountInfoUseCase implements UseCase<Unit, SaveAccountInfoParams> {
-  final AuthRepository repository;
+  final AccountInfoRepository repository;
 
   SaveAccountInfoUseCase(this.repository);
 

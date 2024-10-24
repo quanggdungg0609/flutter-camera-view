@@ -5,18 +5,8 @@ abstract class AuthState extends Equatable {
   List<Object?> get props => [];
 }
 
-class AuthInitialState extends AuthState {}
-
-class FetchingAccountInfoState extends AuthState {}
-
 // ignore: must_be_immutable
-class NotConnectedState extends AuthState {
-  AccountInfo? accountInfo;
-  NotConnectedState(this.accountInfo);
-
-  @override
-  List<Object?> get props => [accountInfo];
-}
+class NotConnectedState extends AuthState {}
 
 class Connecting extends AuthState {}
 

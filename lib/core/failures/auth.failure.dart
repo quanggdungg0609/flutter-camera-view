@@ -1,15 +1,4 @@
-import 'package:equatable/equatable.dart';
-
-abstract class Failure extends Equatable {
-  @override
-  List<Object?> get props => [];
-}
-
 // General failures
+import 'package:flutter_camera_view/core/failures/failure.dart';
+
 class LoginFailure extends Failure {}
-
-class SaveAccountInfoFailure extends Failure {}
-
-class ClearAccountInfoFailure extends Failure {}
-
-class FetchAccountInfoFailure extends Failure {}

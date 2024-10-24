@@ -1,14 +1,19 @@
 import "dart:io";
-import "dart:math";
-import "dart:typed_data";
 
 import "package:dio/dio.dart";
 import "package:flutter_camera_view/features/login/data/datasources/auth.datasource.dart";
 import "package:flutter_camera_view/features/login/data/datasources/local.datasource.dart";
 import "package:flutter_camera_view/features/login/data/models/tokens.model.dart";
+import "package:flutter_camera_view/features/login/data/repositories/account_info_impl.repository.dart";
 import "package:flutter_camera_view/features/login/data/repositories/auth_impl.reposiory.dart";
 import "package:flutter_camera_view/features/login/domain/entities/tokens.entity.dart";
+import "package:flutter_camera_view/features/login/domain/repositories/account_info.repository.dart";
 import "package:flutter_camera_view/features/login/domain/repositories/auth.repository.dart";
+import "package:flutter_camera_view/features/login/domain/usecases/clear_account_info.usecase.dart";
+import "package:flutter_camera_view/features/login/domain/usecases/fetch_account_info.usecase.dart";
+import "package:flutter_camera_view/features/login/domain/usecases/login.usecase.dart";
+import "package:flutter_camera_view/features/login/domain/usecases/save_account_info.usecase.dart";
+import "package:flutter_camera_view/features/login/presentation/bloc/auth/auth_bloc.dart";
 import "package:flutter_dotenv/flutter_dotenv.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
 import "package:path_provider/path_provider.dart" as path_provider;
@@ -34,7 +39,7 @@ Future<void> initializeDependencies() async {
 
   await sl.isReady<Directory>();
   Hive.init(sl<Directory>().path);
-
+  // * Data sources
   // create box of hive
   sl.registerSingletonAsync<BoxCollection>(() async {
     var collection = await BoxCollection.open(
@@ -130,11 +135,52 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // repositories
+  // * Repositories
   sl.registerSingleton<AuthRepository>(
     AuthRepositoryImpl(
       authDataSource: sl<AuthDataSource>(),
       localDataSource: sl<LocalDataSource>(),
+    ),
+  );
+
+  sl.registerSingleton<AccountInfoRepository>(
+    AccountInfoImplRepository(
+      localDataSource: sl<LocalDataSource>(),
+    ),
+  );
+
+  // * Use cases
+  sl.registerLazySingleton<LoginUseCase>(
+    () => LoginUseCase(
+      repository: sl<AuthRepository>(),
+    ),
+  );
+
+  sl.registerLazySingleton<ClearAccountInfoUseCase>(
+    () => ClearAccountInfoUseCase(
+      sl<AccountInfoRepository>(),
+    ),
+  );
+
+  sl.registerLazySingleton<FetchAccountInfoUseCase>(
+    () => FetchAccountInfoUseCase(
+      sl<AccountInfoRepository>(),
+    ),
+  );
+
+  sl.registerLazySingleton<SaveAccountInfoUseCase>(
+    () => SaveAccountInfoUseCase(
+      sl<AccountInfoRepository>(),
+    ),
+  );
+
+  // * Blocs
+  sl.registerFactory<AuthBloc>(
+    () => AuthBloc(
+      loginUseCase: sl<LoginUseCase>(),
+      saveAccountInfoUseCase: sl<SaveAccountInfoUseCase>(),
+      clearAccountInfoUseCase: sl<ClearAccountInfoUseCase>(),
+      fetchAccountInfoUseCase: sl<FetchAccountInfoUseCase>(),
     ),
   );
 }
