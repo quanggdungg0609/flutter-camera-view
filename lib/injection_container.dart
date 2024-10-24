@@ -13,6 +13,7 @@ import "package:flutter_camera_view/features/login/domain/usecases/clear_account
 import "package:flutter_camera_view/features/login/domain/usecases/fetch_account_info.usecase.dart";
 import "package:flutter_camera_view/features/login/domain/usecases/login.usecase.dart";
 import "package:flutter_camera_view/features/login/domain/usecases/save_account_info.usecase.dart";
+import "package:flutter_camera_view/features/login/presentation/bloc/account/account_info.bloc.dart";
 import "package:flutter_camera_view/features/login/presentation/bloc/auth/auth_bloc.dart";
 import "package:flutter_dotenv/flutter_dotenv.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
@@ -181,6 +182,14 @@ Future<void> initializeDependencies() async {
       saveAccountInfoUseCase: sl<SaveAccountInfoUseCase>(),
       clearAccountInfoUseCase: sl<ClearAccountInfoUseCase>(),
       fetchAccountInfoUseCase: sl<FetchAccountInfoUseCase>(),
+    ),
+  );
+
+  sl.registerFactory<AccountInfoBloc>(
+    () => AccountInfoBloc(
+      fetchAccountInfoUseCase: sl<FetchAccountInfoUseCase>(),
+      saveAccountInfoUseCase: sl<SaveAccountInfoUseCase>(),
+      clearAccountInfoUseCase: sl<ClearAccountInfoUseCase>(),
     ),
   );
 }
