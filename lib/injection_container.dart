@@ -3,9 +3,12 @@ import "dart:math";
 import "dart:typed_data";
 
 import "package:dio/dio.dart";
+import "package:flutter_camera_view/features/login/data/datasources/auth.datasource.dart";
 import "package:flutter_camera_view/features/login/data/datasources/local.datasource.dart";
 import "package:flutter_camera_view/features/login/data/models/tokens.model.dart";
+import "package:flutter_camera_view/features/login/data/repositories/auth_impl.reposiory.dart";
 import "package:flutter_camera_view/features/login/domain/entities/tokens.entity.dart";
+import "package:flutter_camera_view/features/login/domain/repositories/auth.repository.dart";
 import "package:flutter_dotenv/flutter_dotenv.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
 import "package:path_provider/path_provider.dart" as path_provider;
@@ -18,31 +21,33 @@ Future<void> initializeDependencies() async {
   // Load env file
   await dotenv.load(fileName: ".env");
 
-  sl.registerLazySingletonAsync<Directory>(() async {
-    final appDocumentDirectory = await path_provider.getApplicationCacheDirectory();
-    return appDocumentDirectory;
+  sl.registerSingletonAsync<Directory>(() async {
+    return await path_provider.getApplicationCacheDirectory();
   });
 
   // init flutter secure storage
-  sl.registerSingleton(() {
+  sl.registerLazySingleton<FlutterSecureStorage>(() {
     AndroidOptions getAndroidOptions() => const AndroidOptions(encryptedSharedPreferences: true);
     final storage = FlutterSecureStorage(aOptions: getAndroidOptions());
     return storage;
   });
 
+  await sl.isReady<Directory>();
   Hive.init(sl<Directory>().path);
 
   // create box of hive
   sl.registerSingletonAsync<BoxCollection>(() async {
     var collection = await BoxCollection.open(
-      "CameraViewApp",
-      {
-        "settings",
-        "userInfo",
-      },
-    );
+        "CameraViewApp",
+        {
+          "settings",
+          "userInfo",
+        },
+        path: "${sl<Directory>().path}/CameraViewApp");
     return collection;
   });
+
+  await sl.isReady<BoxCollection>();
 
   sl.registerSingleton<LocalDataSource>(
     LocalDataSourceImpl(
@@ -118,4 +123,18 @@ Future<void> initializeDependencies() async {
     );
     return dio;
   });
+
+  sl.registerSingleton<AuthDataSource>(
+    AuthDatasSourceImpl(
+      dio: sl<Dio>(),
+    ),
+  );
+
+  // repositories
+  sl.registerSingleton<AuthRepository>(
+    AuthRepositoryImpl(
+      authDataSource: sl<AuthDataSource>(),
+      localDataSource: sl<LocalDataSource>(),
+    ),
+  );
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_camera_view/core/router/router.dart';
+import 'package:flutter_camera_view/injection_container.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDependencies();
   runApp(const MyApp());
 }
 
