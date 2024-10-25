@@ -6,8 +6,8 @@ abstract class AuthState extends Equatable {
 }
 
 // ignore: must_be_immutable
-class NotConnectedState extends AuthState {}
+class NoAuthenticatedState extends AuthState {}
 
-class Connecting extends AuthState {}
+class Authenticating extends AuthState {}
 
-class Connected extends AuthState {}
+class Authenticated extends AuthState {}

@@ -179,9 +179,6 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<AuthBloc>(
     () => AuthBloc(
       loginUseCase: sl<LoginUseCase>(),
-      saveAccountInfoUseCase: sl<SaveAccountInfoUseCase>(),
-      clearAccountInfoUseCase: sl<ClearAccountInfoUseCase>(),
-      fetchAccountInfoUseCase: sl<FetchAccountInfoUseCase>(),
     ),
   );
 

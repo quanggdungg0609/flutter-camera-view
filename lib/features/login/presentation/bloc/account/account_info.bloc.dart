@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_camera_view/core/usecase.dart';
 import 'package:flutter_camera_view/features/login/domain/entities/account_info.entity.dart';
@@ -19,18 +20,22 @@ class AccountInfoBloc extends Bloc<AccountInfoEvent, AccountInfoState> {
     required this.saveAccountInfoUseCase,
     required this.clearAccountInfoUseCase,
   }) : super(AccountInfoInitialState()) {
+    print("Account Info Bloc created");
     // * Fetch account info data from secure storage
     on<FetchAccountInfoEvent>(
       (event, emit) async {
+        print("Fetching data");
         emit(FetchingAccountInfoState());
         final failureOrFetchData = await fetchAccountInfoUseCase.call(NoParams());
 
         failureOrFetchData.fold((failure) {
           // nothing happens
-          print("Error: $failure");
-          emit(AccountInfoFetchedState(null));
+          if (kDebugMode) {
+            print("Error: $failure");
+          }
+          emit(AccountInfoNormalState(null));
         }, (AccountInfo? accountInfo) {
-          emit(AccountInfoFetchedState(accountInfo));
+          emit(AccountInfoNormalState(accountInfo));
         });
       },
     );
@@ -48,14 +53,28 @@ class AccountInfoBloc extends Bloc<AccountInfoEvent, AccountInfoState> {
         failureOrSaveData.fold(
           (failure) {
             // * do nothing
-            print("Error saving account info: $failure");
+            if (kDebugMode) {
+              print("Error saving account info: $failure");
+            }
           },
           (unit) {
-            print("Account info saved successfully");
+            if (kDebugMode) {
+              print("Account info saved successfully");
+            }
             // * do nothing
           },
         );
       },
     );
+
+    on<ClearAccountInfoEvent>((event, emit) async {
+      final failureOrClearInfo = await clearAccountInfoUseCase.call(NoParams());
+
+      failureOrClearInfo.fold((failure) {
+        // do nothing
+      }, (_) {
+        // do nothing
+      });
+    });
   }
 }

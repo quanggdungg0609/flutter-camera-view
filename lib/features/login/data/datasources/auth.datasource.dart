@@ -5,11 +5,9 @@ import 'package:flutter_camera_view/features/login/data/models/tokens.model.dart
 import 'package:flutter_camera_view/features/login/data/models/user_info.model.dart';
 import 'package:flutter_camera_view/features/login/domain/entities/account_info.entity.dart';
 import 'package:flutter_camera_view/features/login/domain/entities/login_response.entity.dart';
-import 'package:flutter_camera_view/features/login/domain/entities/user_info.entity.dart';
 
 abstract class AuthDataSource {
   Future<LoginResponse> login(AccountInfo accountInfo);
-  Future<UserInfo> getMyInfo();
 }
 
 class AuthDatasSourceImpl implements AuthDataSource {
@@ -18,24 +16,20 @@ class AuthDatasSourceImpl implements AuthDataSource {
   AuthDatasSourceImpl({required this.dio});
 
   @override
-  Future<UserInfo> getMyInfo() {
-    // TODO: implement getMyInfo
-    throw UnimplementedError();
-  }
-
-  @override
   Future<LoginResponseModel> login(AccountInfo accountInfo) async {
     try {
-      var response = await dio.post("/auth/login/", data: {
+      Response response = await dio.post("/auth/login/", data: {
         "username": accountInfo.accountID,
         "password": accountInfo.password,
       });
 
-      UserInfoModel userInfo = UserInfoModel.fromJson(response.data);
-      RefreshTokenModel refreshToken = RefreshTokenModel.fromJson(response.data);
-      AccessTokenModel accessToken = AccessTokenModel.fromJson(response.data);
+      Map<String, dynamic> json = response.data;
+
+      UserInfoModel userInfo = UserInfoModel.fromJson(json);
+      RefreshTokenModel refreshToken = RefreshTokenModel.fromJson(json);
+      AccessTokenModel accessToken = AccessTokenModel.fromJson(json);
       return LoginResponseModel(userInfo: userInfo, accessToken: accessToken, refreshToken: refreshToken);
-    } catch (_) {
+    } catch (e) {
       throw FailedToLoginException();
     }
   }

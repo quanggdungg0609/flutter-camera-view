@@ -11,11 +11,11 @@ class UserInfoModel extends UserInfo {
 
   factory UserInfoModel.fromJson(Map<String, dynamic> json) {
     return UserInfoModel(
-      userName: json["username"],
-      email: json["email"],
-      role: json["role"],
-      firstName: json["first_name"],
-      lastName: json["last_name"],
+      userName: json["user"]["username"],
+      email: json["user"]["email"],
+      role: json["user"]["role"],
+      firstName: json["user"]["first_name"] as String?,
+      lastName: json["user"]["last_name"] as String?,
     );
   }
 }

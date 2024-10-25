@@ -11,10 +11,12 @@ class AccountInfoInitialState extends AccountInfoState {}
 
 class FetchingAccountInfoState extends AccountInfoState {}
 
+class SavingAccountInfoState extends AccountInfoState {}
+
 // ignore: must_be_immutable
-class AccountInfoFetchedState extends AccountInfoState {
+class AccountInfoNormalState extends AccountInfoState {
   AccountInfo? accountInfo;
-  AccountInfoFetchedState(this.accountInfo);
+  AccountInfoNormalState(this.accountInfo);
 
   @override
   List<Object?> get props => [accountInfo];

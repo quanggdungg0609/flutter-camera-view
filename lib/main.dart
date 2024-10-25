@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_camera_view/core/router/router.dart';
 import 'package:flutter_camera_view/injection_container.dart';
+import 'package:toastification/toastification.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,10 +15,12 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      routerConfig: AppRouter.router,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return ToastificationWrapper(
+      child: MaterialApp.router(
+        routerConfig: AppRouter.router,
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
       ),
     );
   }
