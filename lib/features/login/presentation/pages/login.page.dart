@@ -5,19 +5,8 @@ import 'package:flutter_camera_view/features/login/presentation/bloc/auth/auth_b
 import 'package:flutter_camera_view/features/login/presentation/widgets/login_section.widget.dart';
 import 'package:flutter_camera_view/injection_container.dart';
 
-class LoginPages extends StatefulWidget {
+class LoginPages extends StatelessWidget {
   const LoginPages({super.key});
-
-  @override
-  // ignore: library_private_types_in_public_api
-  _LoginPagesState createState() => _LoginPagesState();
-}
-
-class _LoginPagesState extends State<LoginPages> {
-  bool isRemember = false;
-  // controllers
-  TextEditingController accountController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {

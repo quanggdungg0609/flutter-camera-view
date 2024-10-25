@@ -1,4 +1,4 @@
-import 'package:flutter_camera_view/features/login/presentation/pages/login_pages.dart';
+import 'package:flutter_camera_view/features/login/presentation/pages/login.page.dart';
 import 'package:go_router/go_router.dart';
 
 class AppRouter {
