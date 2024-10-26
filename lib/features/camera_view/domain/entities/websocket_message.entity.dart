@@ -23,20 +23,29 @@ abstract class CameraConnectMessage extends WebsocketMessage {
   List<Object?> get props => [event, cameraInfo];
 }
 
+abstract class CameraDisconnectMessage extends WebsocketMessage {
+  final CameraInfo cameraInfo;
+
+  const CameraDisconnectMessage({required super.event, required this.cameraInfo});
+
+  @override
+  List<Object?> get props => [event, cameraInfo];
+}
+
 abstract class ResponseCameraListMessage extends WebsocketMessage {
   final List<CameraInfo> cameras;
 
   const ResponseCameraListMessage({required super.event, required this.cameras});
 
   @override
-  List<Object?> get props => [super.event, cameras];
+  List<Object?> get props => [event, cameras];
 }
 
 abstract class PongMessage extends WebsocketMessage {
   const PongMessage({required super.event});
 
   @override
-  List<Object?> get props => [super.event];
+  List<Object?> get props => [event];
 }
 
 abstract class AnswerSDMessage extends WebsocketMessage {
@@ -44,5 +53,5 @@ abstract class AnswerSDMessage extends WebsocketMessage {
   const AnswerSDMessage({required super.event, required this.sessionDescription});
 
   @override
-  List<Object?> get props => [super.event, sessionDescription];
+  List<Object?> get props => [event, sessionDescription];
 }
