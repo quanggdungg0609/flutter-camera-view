@@ -48,8 +48,8 @@ dependencies:
   flutter_secure_storage: ^9.2.2
   dartz: ^0.10.1
   toastification: ^2.3.0
-
-  
+  google_nav_bar: ^5.0.6
+  line_icons: ^2.0.2
   
   
 

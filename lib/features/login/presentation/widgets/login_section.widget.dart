@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_camera_view/features/login/presentation/bloc/account/account_info.bloc.dart';
 import 'package:flutter_camera_view/features/login/presentation/bloc/auth/auth_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:toastification/toastification.dart';
 
 class LoginSectionWidget extends StatefulWidget {
@@ -49,6 +50,9 @@ class _LoginSectionWidgetState extends State<LoginSectionWidget> {
                 autoCloseDuration: const Duration(seconds: 2),
                 showProgressBar: false,
                 closeButtonShowType: CloseButtonShowType.none,
+                callbacks: ToastificationCallbacks(
+                  onAutoCompleteCompleted: (toastItem) => context.go("/"),
+                ),
               );
 
               if (isRemember) {
