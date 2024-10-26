@@ -21,3 +21,11 @@ class SaveUserInfoException implements Exception {}
 class GetUserInfoException implements Exception {}
 
 class ClearUserInfoException implements Exception {}
+
+// * Exception of Uuid actions
+
+class GenerateUuidException implements Exception {}
+
+class GetUuidException implements Exception {}
+
+class ClearUuidException implements Exception {}

@@ -8,8 +8,16 @@ import 'package:flutter_camera_view/features/login/domain/entities/tokens.entity
 import 'package:flutter_camera_view/features/login/domain/entities/user_info.entity.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
 
 abstract class LocalDataSource {
+  // Generate uuid
+  Future<void> generateUuid();
+
+  Future<String?> getUuid();
+
+  Future<void> clearUuid();
+
   /// Saves the access token and refresh token in secure storage.
   Future<void> saveToken(AccessToken accessToken, RefreshToken refreshToken);
 
@@ -189,6 +197,35 @@ class LocalDataSourceImpl implements LocalDataSource {
       await userInfoBox.delete(USER_INFO_KEY);
     } catch (_) {
       throw ClearUserInfoException();
+    }
+  }
+
+  @override
+  Future<void> clearUuid() async {
+    try {
+      await secureStorage.delete(key: UUID);
+    } catch (_) {
+      throw ClearUuidException();
+    }
+  }
+
+  @override
+  Future<void> generateUuid() async {
+    try {
+      final uuid = const Uuid().v4();
+      await secureStorage.write(key: UUID, value: uuid);
+    } catch (_) {
+      throw GenerateUuidException();
+    }
+  }
+
+  @override
+  Future<String?> getUuid() async {
+    try {
+      final uuid = await secureStorage.read(key: UUID);
+      return uuid;
+    } catch (_) {
+      throw GetUuidException();
     }
   }
 }

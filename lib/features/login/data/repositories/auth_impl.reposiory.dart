@@ -25,6 +25,9 @@ class AuthRepositoryImpl implements AuthRepository {
       // save user Info into localDataSource
       await localDataSource.saveUserInfo(loginResponse.userInfo);
 
+      // generate uuid
+      await localDataSource.generateUuid();
+
       return const Right(unit);
     } on FailedToLoginException {
       return Left(LoginFailure());
