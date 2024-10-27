@@ -1,21 +1,20 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:js_interop';
 
-import 'package:flutter_camera_view/features/camera_view/data/models/websocket_message.model.dart';
-import 'package:flutter_camera_view/features/camera_view/domain/entities/websocket_message.entity.dart';
+import 'package:flutter_camera_view/features/camera_view/data/models/server_ws_message.model.dart';
+import 'package:flutter_camera_view/features/camera_view/domain/entities/server_ws_message.entity.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 abstract class WebSocketDataSource {
-  Stream<String> get message;
+  Stream<ServerWsMessage> get message;
   Future<void> connect(String accountID, String uuid);
   Future<void> send(String message);
   Future<void> disconnect();
 }
 
 class WebsocketDataSourceImpl extends WebSocketDataSource {
-  late final StreamController<String> _messageController;
+  late final StreamController<ServerWsMessage> _messageController;
   late final WebSocketChannel wsChannel;
 
   @override
@@ -26,10 +25,14 @@ class WebsocketDataSourceImpl extends WebSocketDataSource {
 
       await channel.ready;
 
+      _messageController = StreamController<ServerWsMessage>.broadcast();
       wsChannel = channel;
       wsChannel.stream.listen((dynamic message) {
         final messageJson = jsonDecode(message);
-        if (messageJson == null) {}
+        if (messageJson != null) {
+          final mess = _jsonToMessage(messageJson);
+          _messageController.add(mess!);
+        }
       });
     } catch (_) {}
   }
@@ -41,7 +44,7 @@ class WebsocketDataSourceImpl extends WebSocketDataSource {
   }
 
   @override
-  Stream<String> get message => _messageController.stream;
+  Stream<ServerWsMessage> get message => _messageController.stream;
 
   @override
   Future<void> send(String message) {
@@ -49,12 +52,18 @@ class WebsocketDataSourceImpl extends WebSocketDataSource {
     throw UnimplementedError();
   }
 
-  WebsocketMessage? jsonToMessage(Map<String, dynamic> json) {
+  ServerWsMessage? _jsonToMessage(Map<String, dynamic> json) {
     switch (json["event"]) {
       case "camera-connect":
         return CameraConnectMessageModel.fromJson(json);
       case "camera-disconnect":
         return CameraDisconnectMessageModel.fromJson(json);
+      case "response-list-cameras":
+        return ResponseCameraListMessageModel.fromJson(json);
+      case "answer-sd":
+        return AnswerSDMessageModel.fromJson(json);
+      case "pong":
+        return const PongMessageModel(event: "pong");
       default:
         return null;
     }

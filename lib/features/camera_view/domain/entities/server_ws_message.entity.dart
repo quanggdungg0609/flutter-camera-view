@@ -2,17 +2,17 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/entities/camera_info.entity.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
-abstract class WebsocketMessage extends Equatable {
+abstract class ServerWsMessage extends Equatable {
   final String event;
 
-  const WebsocketMessage({
+  const ServerWsMessage({
     required this.event,
   });
   @override
   List<Object?> get props => [event];
 }
 
-abstract class CameraConnectMessage extends WebsocketMessage {
+abstract class CameraConnectMessage extends ServerWsMessage {
   final CameraInfo cameraInfo;
   const CameraConnectMessage({
     required super.event,
@@ -23,7 +23,7 @@ abstract class CameraConnectMessage extends WebsocketMessage {
   List<Object?> get props => [event, cameraInfo];
 }
 
-abstract class CameraDisconnectMessage extends WebsocketMessage {
+abstract class CameraDisconnectMessage extends ServerWsMessage {
   final CameraInfo cameraInfo;
 
   const CameraDisconnectMessage({required super.event, required this.cameraInfo});
@@ -32,7 +32,7 @@ abstract class CameraDisconnectMessage extends WebsocketMessage {
   List<Object?> get props => [event, cameraInfo];
 }
 
-abstract class ResponseCameraListMessage extends WebsocketMessage {
+abstract class ResponseCameraListMessage extends ServerWsMessage {
   final List<CameraInfo> cameras;
 
   const ResponseCameraListMessage({required super.event, required this.cameras});
@@ -41,14 +41,14 @@ abstract class ResponseCameraListMessage extends WebsocketMessage {
   List<Object?> get props => [event, cameras];
 }
 
-abstract class PongMessage extends WebsocketMessage {
+abstract class PongMessage extends ServerWsMessage {
   const PongMessage({required super.event});
 
   @override
   List<Object?> get props => [event];
 }
 
-abstract class AnswerSDMessage extends WebsocketMessage {
+abstract class AnswerSDMessage extends ServerWsMessage {
   final RTCSessionDescription sessionDescription;
   const AnswerSDMessage({required super.event, required this.sessionDescription});
 
