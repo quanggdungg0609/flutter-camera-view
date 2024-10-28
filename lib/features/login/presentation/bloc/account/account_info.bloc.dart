@@ -20,7 +20,6 @@ class AccountInfoBloc extends Bloc<AccountInfoEvent, AccountInfoState> {
     required this.saveAccountInfoUseCase,
     required this.clearAccountInfoUseCase,
   }) : super(AccountInfoInitialState()) {
-    print("Account Info Bloc created");
     // * Fetch account info data from secure storage
     on<FetchAccountInfoEvent>(
       (event, emit) async {

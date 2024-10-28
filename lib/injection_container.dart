@@ -41,6 +41,18 @@ Future<void> initializeDependencies() async {
   await sl.isReady<Directory>();
   Hive.init(sl<Directory>().path);
   // * Data sources
+  await _initialDataSources();
+
+  // * Repositories
+  await _initialRepositories();
+  // * Use cases
+  await _initalUseCases();
+
+  // * Blocs
+  await _initalBlocs();
+}
+
+Future<void> _initialDataSources() async {
   // create box of hive
   sl.registerSingletonAsync<BoxCollection>(() async {
     var collection = await BoxCollection.open(
@@ -135,8 +147,9 @@ Future<void> initializeDependencies() async {
       dio: sl<Dio>(),
     ),
   );
+}
 
-  // * Repositories
+Future<void> _initialRepositories() async {
   sl.registerSingleton<AuthRepository>(
     AuthRepositoryImpl(
       authDataSource: sl<AuthDataSource>(),
@@ -149,8 +162,9 @@ Future<void> initializeDependencies() async {
       localDataSource: sl<LocalDataSource>(),
     ),
   );
+}
 
-  // * Use cases
+Future<void> _initalUseCases() async {
   sl.registerLazySingleton<LoginUseCase>(
     () => LoginUseCase(
       repository: sl<AuthRepository>(),
@@ -174,8 +188,9 @@ Future<void> initializeDependencies() async {
       sl<AccountInfoRepository>(),
     ),
   );
+}
 
-  // * Blocs
+Future<void> _initalBlocs() async {
   sl.registerFactory<AuthBloc>(
     () => AuthBloc(
       loginUseCase: sl<LoginUseCase>(),

@@ -1,19 +1,23 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter_camera_view/core/exceptions/websocket_datasource.exception.dart';
 import 'package:flutter_camera_view/features/camera_view/data/models/server_ws_message.model.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/entities/server_ws_message.entity.dart';
+import 'package:flutter_camera_view/features/camera_view/domain/entities/ws_message.entity.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/status.dart' as status;
 
 abstract class WebSocketDataSource {
   Stream<ServerWsMessage> get message;
   Future<void> connect(String accountID, String uuid);
-  Future<void> send(String message);
+  Future<void> send(WsMessage message);
   Future<void> disconnect();
 }
 
-class WebsocketDataSourceImpl extends WebSocketDataSource {
+class WebSocketDataSourceImpl extends WebSocketDataSource {
   late final StreamController<ServerWsMessage> _messageController;
   late final WebSocketChannel wsChannel;
 
@@ -34,22 +38,26 @@ class WebsocketDataSourceImpl extends WebSocketDataSource {
           _messageController.add(mess!);
         }
       });
-    } catch (_) {}
+    } catch (_) {
+      throw ConnectException();
+    }
   }
 
   @override
-  Future<void> disconnect() {
-    // TODO: implement disconnect
-    throw UnimplementedError();
+  Future<void> disconnect() async {
+    try {
+      await wsChannel.sink.close(status.goingAway);
+    } catch (_) {
+      throw DisconnectException();
+    }
   }
 
   @override
   Stream<ServerWsMessage> get message => _messageController.stream;
 
   @override
-  Future<void> send(String message) {
-    // TODO: implement send
-    throw UnimplementedError();
+  Future<void> send(WsMessage message) async {
+    try {} catch (_) {}
   }
 
   ServerWsMessage? _jsonToMessage(Map<String, dynamic> json) {
@@ -64,6 +72,8 @@ class WebsocketDataSourceImpl extends WebSocketDataSource {
         return AnswerSDMessageModel.fromJson(json);
       case "pong":
         return const PongMessageModel(event: "pong");
+      case "ice-candidate":
+        break;
       default:
         return null;
     }

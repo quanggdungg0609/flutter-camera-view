@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_camera_view/core/exceptions/local_datasource.exception.dart';
-import 'package:flutter_camera_view/core/failures/account_info.dart';
+import 'package:flutter_camera_view/core/failures/account_info.failure.dart';
 import 'package:flutter_camera_view/core/failures/failure.dart';
 import 'package:flutter_camera_view/features/login/data/datasources/local.datasource.dart';
 import 'package:flutter_camera_view/features/login/data/models/account_info.model.dart';
