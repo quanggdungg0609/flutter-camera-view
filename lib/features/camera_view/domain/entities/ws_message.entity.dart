@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
+class UnknowEventType implements Exception {}
+
 abstract class WsMessage extends Equatable {
   final String event;
 
@@ -12,6 +14,26 @@ abstract class WsMessage extends Equatable {
 
   @override
   List<Object?> get props => [event];
+
+  factory WsMessage.fromMap(Map<String, dynamic> map) {
+    switch (map["event"]) {
+      case "request-list-camera":
+        return RequestCameraListMessage(event: map["event"]);
+      case "offer-sd":
+        return OfferSDMessage(
+          event: map["event"],
+          uuid: map["data"]["uuid"],
+          sessionDescription: RTCSessionDescription(
+            map["data"]["sdp"],
+            map["data"]["type"],
+          ),
+          cameraTargetUuid: map["data"]["to"],
+        );
+      // TODO: implement ice candidate
+      default:
+        throw UnknowEventType();
+    }
+  }
 }
 
 class RequestCameraListMessage extends WsMessage {

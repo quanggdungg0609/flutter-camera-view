@@ -77,5 +77,6 @@ class WebSocketDataSourceImpl extends WebSocketDataSource {
       default:
         return null;
     }
+    return null;
   }
 }

@@ -51,6 +51,7 @@ dependencies:
   google_nav_bar: ^5.0.6
   line_icons: ^2.0.2
   uuid: ^4.5.1
+  rxdart: ^0.28.0
   
   
 

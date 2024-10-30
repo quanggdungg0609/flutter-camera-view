@@ -8,3 +8,48 @@ sealed class WebSocketEvent extends Equatable {
 }
 
 class WsConnectEvent extends WebSocketEvent {}
+
+class WsSendMessageEvent extends WebSocketEvent {
+  final Map<String, dynamic> message;
+
+  const WsSendMessageEvent({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class WsCameraConnectEvent extends WebSocketEvent {
+  final CameraInfo camera;
+
+  const WsCameraConnectEvent({required this.camera});
+
+  @override
+  List<Object?> get props => [camera];
+}
+
+class WsResponseListCameraEvent extends WebSocketEvent {
+  final List<CameraInfo> listCamera;
+
+  const WsResponseListCameraEvent({required this.listCamera});
+
+  @override
+  List<Object?> get props => [listCamera];
+}
+
+class WsCameraDisconnect extends WebSocketEvent {
+  final CameraInfo camera;
+
+  const WsCameraDisconnect({required this.camera});
+
+  @override
+  List<Object?> get props => [camera];
+}
+
+class WsAnswerSDEvent extends WebSocketEvent {
+  final RTCSessionDescription sessionDescription;
+
+  const WsAnswerSDEvent({required this.sessionDescription});
+
+  @override
+  List<Object?> get props => [sessionDescription];
+}
