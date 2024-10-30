@@ -1,6 +1,7 @@
 import "dart:io";
 
 import "package:dio/dio.dart";
+import "package:flutter_camera_view/core/services/sdp_transport.service.dart";
 import "package:flutter_camera_view/features/login/data/datasources/auth.datasource.dart";
 import "package:flutter_camera_view/features/login/data/datasources/local.datasource.dart";
 import "package:flutter_camera_view/features/login/data/models/tokens.model.dart";
@@ -37,6 +38,11 @@ Future<void> initializeDependencies() async {
     final storage = FlutterSecureStorage(aOptions: getAndroidOptions());
     return storage;
   });
+
+  // services
+  sl.registerLazySingleton<SDPTransportService>(
+    () => SDPTransportService(),
+  );
 
   await sl.isReady<Directory>();
   Hive.init(sl<Directory>().path);

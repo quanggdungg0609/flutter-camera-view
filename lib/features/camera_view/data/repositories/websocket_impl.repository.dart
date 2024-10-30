@@ -3,7 +3,7 @@ import 'package:flutter_camera_view/core/failures/failure.dart';
 import 'package:flutter_camera_view/core/failures/websocket.failure.dart';
 import 'package:flutter_camera_view/features/camera_view/data/datasources/websocket.datasource.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/entities/server_ws_message.entity.dart';
-import 'package:flutter_camera_view/features/camera_view/domain/entities/ws_message.dart';
+import 'package:flutter_camera_view/features/camera_view/domain/entities/ws_message.entity.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/repositories/websocket.repository.dart';
 import 'package:flutter_camera_view/features/login/data/datasources/local.datasource.dart';
 
@@ -40,8 +40,12 @@ class WebSocketImplRepository extends WebSocketRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> sendMessage(WsMessage message) {
-    // TODO: implement sendMessage
-    throw UnimplementedError();
+  Future<Either<Failure, Unit>> sendMessage(WsMessage message) async {
+    try {
+      await wsDataSource.send(message);
+      return const Right(unit);
+    } catch (_) {
+      return Left(SendMessageFailure());
+    }
   }
 }

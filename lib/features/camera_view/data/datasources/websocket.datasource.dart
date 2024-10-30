@@ -6,7 +6,6 @@ import 'package:flutter_camera_view/features/camera_view/data/models/server_ws_m
 import 'package:flutter_camera_view/features/camera_view/domain/entities/server_ws_message.entity.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/entities/ws_message.entity.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
 
