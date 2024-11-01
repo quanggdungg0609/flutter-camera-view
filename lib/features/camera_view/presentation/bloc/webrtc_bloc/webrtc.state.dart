@@ -11,12 +11,16 @@ class WebRTCNew extends WebRTCState {}
 
 class WebRTCConnecting extends WebRTCState {}
 
-class WebRTCConnected extends WebRTCState {}
+class WebRTCConnected extends WebRTCState {
+  final RTCVideoRenderer? remoteRender;
 
-class WebRTCCompleted extends WebRTCState {}
+  WebRTCConnected({this.remoteRender});
 
-class WebRTCFailed extends WebRTCState {}
-
-class WebRTCDisconnected extends WebRTCState {}
+  factory WebRTCConnected.copyWith(RTCVideoRenderer remote) {
+    return WebRTCConnected(remoteRender: remote);
+  }
+}
 
 class WebRTCClosed extends WebRTCState {}
+
+class WebRTCConnectFailed extends WebRTCState {}

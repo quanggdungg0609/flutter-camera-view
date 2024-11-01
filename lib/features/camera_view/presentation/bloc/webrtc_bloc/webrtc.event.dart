@@ -13,3 +13,23 @@ class WebRTCHaveLocalOfferEvent extends WebRTCEvent {
   @override
   List<Object?> get props => [sessionDescription];
 }
+
+class SelectCurrentCameraEvent extends WebRTCEvent {}
+
+class WebRTCAnswerOfferEvent extends WebRTCEvent {
+  final RTCSessionDescription sessionDescription;
+
+  WebRTCAnswerOfferEvent({required this.sessionDescription});
+
+  @override
+  List<Object?> get props => [sessionDescription];
+}
+
+class RemoteRendererReadyEvent extends WebRTCEvent {
+  final RTCVideoRenderer remoteRenderer;
+
+  RemoteRendererReadyEvent({required this.remoteRenderer});
+
+  @override
+  List<Object?> get props => [remoteRenderer];
+}
