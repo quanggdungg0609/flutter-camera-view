@@ -55,3 +55,13 @@ abstract class AnswerSDMessage extends ServerWsMessage {
   @override
   List<Object?> get props => [event, sessionDescription];
 }
+
+abstract class IceCandidateMessage extends ServerWsMessage {
+  final String from;
+  final String to;
+  final RTCIceCandidate iceCandidate;
+  const IceCandidateMessage({required super.event, required this.from, required this.to, required this.iceCandidate});
+
+  @override
+  List<Object?> get props => [event, from, to, iceCandidate];
+}

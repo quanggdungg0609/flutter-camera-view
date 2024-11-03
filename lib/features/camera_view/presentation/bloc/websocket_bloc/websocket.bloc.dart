@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_camera_view/core/services/sdp_transport.service.dart';
+import 'package:flutter_camera_view/core/services/signaling.service.dart';
 import 'package:flutter_camera_view/core/usecase.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/entities/camera_info.entity.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/entities/server_ws_message.entity.dart';
@@ -13,13 +13,13 @@ part 'websocket.state.dart';
 
 class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
   final WebSocketConnectUseCase connectUseCase;
-  final SDPTransportService sdpTransportService;
+  final SignalingService signalingService;
 
   late Stream<ServerWsMessage> serverMessageStream;
   late Stream<RTCSessionDescription> sessionDescriptrionStream;
 
-  WebSocketBloc({required this.connectUseCase, required this.sdpTransportService}) : super(WsNotConnected()) {
-    sessionDescriptrionStream = sdpTransportService.sessionDescriptionStream;
+  WebSocketBloc({required this.connectUseCase, required this.signalingService}) : super(WsNotConnected()) {
+    sessionDescriptrionStream = signalingService.sessionDescriptionStream;
     sessionDescriptrionStream.listen(
       (description) {
         if (description.type == "offer") {
@@ -96,7 +96,7 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
         final currentState = state;
         if (currentState is WsConnected) {
           final sessionDescription = event.sessionDescription;
-          sdpTransportService.sendSessionDesciption(sessionDescription);
+          signalingService.sendSessionDesciption(sessionDescription);
         }
       },
     );

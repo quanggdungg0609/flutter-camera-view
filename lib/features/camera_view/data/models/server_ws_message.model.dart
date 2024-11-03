@@ -1,5 +1,6 @@
 import 'package:flutter_camera_view/features/camera_view/data/models/camera_info.model.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/entities/camera_info.entity.dart';
+import 'package:flutter_camera_view/features/camera_view/domain/entities/ice_candidate.entity.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/entities/server_ws_message.entity.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
@@ -47,5 +48,24 @@ class AnswerSDMessageModel extends AnswerSDMessage {
       json["data"]["type"],
     );
     return AnswerSDMessageModel(event: json["event"], sessionDescription: sd);
+  }
+}
+
+class IceCandidateMessageModel extends IceCandidateMessage {
+  const IceCandidateMessageModel(
+      {required super.event, required super.from, required super.to, required super.iceCandidate});
+
+  factory IceCandidateMessageModel.fromJson(Map<String, dynamic> json) {
+    RTCIceCandidate iceCandidate = RTCIceCandidate(
+      json["data"]["candidate"],
+      json["data"]["sdpMid"],
+      json["data"]["sdpMLineIndex"],
+    );
+    return IceCandidateMessageModel(
+      event: json["event"],
+      from: json["data"]["from"],
+      to: json["data"]["to"],
+      iceCandidate: iceCandidate,
+    );
   }
 }

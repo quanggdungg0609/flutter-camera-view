@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_camera_view/core/constants/webrtc_configuration.dart';
-import 'package:flutter_camera_view/core/services/sdp_transport.service.dart';
+import 'package:flutter_camera_view/core/services/signaling.service.dart';
+import 'package:flutter_camera_view/features/camera_view/domain/entities/ice_candidate.entity.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 part 'webrtc.event.dart';
@@ -11,12 +14,16 @@ class WebRTCBloc extends Bloc<WebRTCEvent, WebRTCState> {
   late RTCPeerConnection _peer;
   late String currentCameraUUID;
 
-  final SDPTransportService sdpTransportService;
+  final SignalingService signalingService;
 
   late Stream<RTCSessionDescription> descriptionStream;
+  late Stream<IceCandidate> iceCandidateRecvStream;
+  late Stream<IceCandidate> iceCandidateSendStream;
 
-  WebRTCBloc({required this.sdpTransportService}) : super(WebRTCIntial()) {
-    descriptionStream = sdpTransportService.sessionDescriptionStream;
+  WebRTCBloc({required this.signalingService}) : super(WebRTCIntial()) {
+    descriptionStream = signalingService.sessionDescriptionStream;
+    iceCandidateRecvStream = signalingService.iceCandidateRecvStream;
+    iceCandidateSendStream = signalingService.iceCandidateSendStream;
 
     on<SelectCurrentCameraEvent>(
       (event, emit) async {
@@ -36,8 +43,16 @@ class WebRTCBloc extends Bloc<WebRTCEvent, WebRTCState> {
       },
     );
 
-    _peer.onIceCandidate = (RTCIceCandidate candidate) {
-      // TODO: implants later
+    Completer<void> iceCandidateCompleter = Completer();
+
+    _peer.onIceCandidate = (candidate) async {
+      // ignore: unnecessary_null_comparison
+      if (candidate == null) {
+        iceCandidateCompleter.complete();
+        return;
+      }
+      final IceCandidate ice = IceCandidate(to: currentCameraUUID, iceCandidate: candidate);
+      signalingService.addIceCandidateSend(ice);
     };
 
     _peer.onTrack = (RTCTrackEvent event) async {
@@ -52,8 +67,15 @@ class WebRTCBloc extends Bloc<WebRTCEvent, WebRTCState> {
         );
       }
     };
+    await iceCandidateCompleter.future;
 
-    RTCSessionDescription offer = await _peer.createOffer(offerSdpConstraints);
-    await _peer.setLocalDescription(offer);
+    RTCSessionDescription sd = await _peer.createOffer(offerSdpConstraints);
+    await _peer.setLocalDescription(sd);
+
+    final offfer = await _peer.getLocalDescription();
+  }
+
+  Future<void> dispose() async {
+    await signalingService.dispose();
   }
 }

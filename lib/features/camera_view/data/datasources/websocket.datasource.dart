@@ -30,13 +30,15 @@ class WebSocketDataSourceImpl extends WebSocketDataSource {
 
       _messageController = StreamController<ServerWsMessage>.broadcast();
       wsChannel = channel;
-      wsChannel.stream.listen((dynamic message) {
-        final messageJson = jsonDecode(message);
-        if (messageJson != null) {
-          final mess = _jsonToMessage(messageJson);
-          _messageController.add(mess!);
-        }
-      });
+      wsChannel.stream.listen(
+        (dynamic message) {
+          final messageJson = jsonDecode(message);
+          if (messageJson != null) {
+            final mess = _jsonToMessage(messageJson);
+            _messageController.add(mess!);
+          }
+        },
+      );
     } catch (_) {
       throw ConnectException();
     }
@@ -72,10 +74,9 @@ class WebSocketDataSourceImpl extends WebSocketDataSource {
       case "pong":
         return const PongMessageModel(event: "pong");
       case "ice-candidate":
-        break;
+        return IceCandidateMessageModel.fromJson(json);
       default:
         return null;
     }
-    return null;
   }
 }

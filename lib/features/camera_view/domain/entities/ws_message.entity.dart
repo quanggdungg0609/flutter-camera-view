@@ -29,7 +29,8 @@ abstract class WsMessage extends Equatable {
           ),
           cameraTargetUuid: map["data"]["to"],
         );
-      // TODO: implement ice candidate
+      case "ice-candidate":
+      //
       default:
         throw UnknowEventType();
     }
