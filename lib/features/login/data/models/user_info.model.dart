@@ -18,4 +18,14 @@ class UserInfoModel extends UserInfo {
       lastName: json["user"]["last_name"] as String?,
     );
   }
+
+  factory UserInfoModel.fromMap(Map<dynamic, dynamic> map) {
+    return UserInfoModel(
+      userName: map["userName"],
+      email: map["email"],
+      role: map["role"],
+      firstName: map["firstName"] as String?,
+      lastName: map["lastName"] as String?,
+    );
+  }
 }

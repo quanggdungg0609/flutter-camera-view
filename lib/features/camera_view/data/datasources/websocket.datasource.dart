@@ -23,7 +23,7 @@ class WebSocketDataSourceImpl extends WebSocketDataSource {
   @override
   Future<void> connect(String accountID, String uuid) async {
     try {
-      final wsUri = Uri.parse("${dotenv.env["WS_URI"]!}/$accountID/$uuid/");
+      final wsUri = Uri.parse("${dotenv.env["WS_URI"]!}/ws/user/$accountID/$uuid/");
       final channel = WebSocketChannel.connect(wsUri);
 
       await channel.ready;
@@ -39,7 +39,10 @@ class WebSocketDataSourceImpl extends WebSocketDataSource {
           }
         },
       );
-    } catch (_) {
+
+      return;
+    } catch (e) {
+      print(e);
       throw ConnectException();
     }
   }

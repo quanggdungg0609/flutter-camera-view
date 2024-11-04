@@ -35,6 +35,7 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
 
         failureOrConnected.fold(
           (failure) {
+            print(failure);
             emit(WsNotConnected());
           },
           (Stream<ServerWsMessage> messageStream) {

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_camera_view/core/constants/constants.dart';
 import 'package:flutter_camera_view/core/exceptions/local_datasource.exception.dart';
 import 'package:flutter_camera_view/features/login/data/models/account_info.model.dart';
@@ -56,7 +57,15 @@ class LocalDataSourceImpl implements LocalDataSource {
   final FlutterSecureStorage secureStorage;
   final BoxCollection hiveCollections;
 
-  LocalDataSourceImpl({required this.secureStorage, required this.hiveCollections});
+  late CollectionBox userInfoBox;
+
+  LocalDataSourceImpl({required this.secureStorage, required this.hiveCollections}) {
+    _init();
+  }
+
+  Future<void> _init() async {
+    userInfoBox = await hiveCollections.openBox<Map>(USER_INFO_BOX);
+  }
 
   @override
   Future<void> clearTokens() async {
@@ -161,12 +170,11 @@ class LocalDataSourceImpl implements LocalDataSource {
   Future<void> saveUserInfo(UserInfo userInfo) async {
     // Saves user information in the Hive database under a specific box and key.
     try {
-      final userInfoBox = await hiveCollections.openBox<Map>(USER_INFO_BOX);
       await userInfoBox.put(
         USER_INFO_KEY,
         userInfo.toMap(),
       );
-    } catch (_) {
+    } catch (e) {
       throw SaveUserInfoException();
     }
   }
@@ -175,15 +183,13 @@ class LocalDataSourceImpl implements LocalDataSource {
   Future<UserInfo?> getUserInfo() async {
     // Retrieves user information from the Hive database.
     try {
-      final userInfoBox = await hiveCollections.openBox<Map<String, dynamic>>(USER_INFO_BOX);
-
       final userInfoMap = await userInfoBox.get(USER_INFO_KEY);
       if (userInfoMap != null) {
-        final userInfo = UserInfoModel.fromJson(userInfoMap);
+        final userInfo = UserInfoModel.fromMap(userInfoMap);
         return userInfo;
       }
       return null;
-    } catch (_) {
+    } catch (e) {
       throw GetUserInfoException();
     }
   }
@@ -192,8 +198,6 @@ class LocalDataSourceImpl implements LocalDataSource {
   Future<void> clearUserInfo() async {
     // Deletes user information from the Hive database.
     try {
-      final userInfoBox = await hiveCollections.openBox<Map<String, dynamic>>(USER_INFO_BOX);
-
       await userInfoBox.delete(USER_INFO_KEY);
     } catch (_) {
       throw ClearUserInfoException();

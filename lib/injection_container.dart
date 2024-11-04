@@ -1,7 +1,13 @@
 import "dart:io";
-
 import "package:dio/dio.dart";
 import "package:flutter_camera_view/core/services/signaling.service.dart";
+import "package:flutter_camera_view/features/camera_view/data/datasources/websocket.datasource.dart";
+import "package:flutter_camera_view/features/camera_view/data/repositories/websocket_impl.repository.dart";
+import "package:flutter_camera_view/features/camera_view/domain/repositories/websocket.repository.dart";
+import "package:flutter_camera_view/features/camera_view/domain/usescases/send_ws_message.usecase.dart";
+import "package:flutter_camera_view/features/camera_view/domain/usescases/websocket_connect.usecase.dart";
+import "package:flutter_camera_view/features/camera_view/presentation/bloc/webrtc_bloc/webrtc.bloc.dart";
+import "package:flutter_camera_view/features/camera_view/presentation/bloc/websocket_bloc/websocket.bloc.dart";
 import "package:flutter_camera_view/features/login/data/datasources/auth.datasource.dart";
 import "package:flutter_camera_view/features/login/data/datasources/local.datasource.dart";
 import "package:flutter_camera_view/features/login/data/models/tokens.model.dart";
@@ -153,6 +159,11 @@ Future<void> _initialDataSources() async {
       dio: sl<Dio>(),
     ),
   );
+
+  // websocket datasource
+  sl.registerSingleton<WebSocketDataSource>(
+    WebSocketDataSourceImpl(),
+  );
 }
 
 Future<void> _initialRepositories() async {
@@ -166,6 +177,13 @@ Future<void> _initialRepositories() async {
   sl.registerSingleton<AccountInfoRepository>(
     AccountInfoImplRepository(
       localDataSource: sl<LocalDataSource>(),
+    ),
+  );
+
+  sl.registerSingleton<WebSocketRepository>(
+    WebSocketImplRepository(
+      localDataSource: sl<LocalDataSource>(),
+      wsDataSource: sl<WebSocketDataSource>(),
     ),
   );
 }
@@ -194,6 +212,18 @@ Future<void> _initalUseCases() async {
       sl<AccountInfoRepository>(),
     ),
   );
+
+  sl.registerLazySingleton<WebSocketConnectUseCase>(
+    () => WebSocketConnectUseCase(
+      wsRepository: sl<WebSocketRepository>(),
+    ),
+  );
+
+  sl.registerLazySingleton<SendWsMessageUseCase>(
+    () => SendWsMessageUseCase(
+      wsRepository: sl<WebSocketRepository>(),
+    ),
+  );
 }
 
 Future<void> _initalBlocs() async {
@@ -208,6 +238,19 @@ Future<void> _initalBlocs() async {
       fetchAccountInfoUseCase: sl<FetchAccountInfoUseCase>(),
       saveAccountInfoUseCase: sl<SaveAccountInfoUseCase>(),
       clearAccountInfoUseCase: sl<ClearAccountInfoUseCase>(),
+    ),
+  );
+
+  sl.registerFactory<WebSocketBloc>(
+    () => WebSocketBloc(
+      connectUseCase: sl<WebSocketConnectUseCase>(),
+      signalingService: sl<SignalingService>(),
+    ),
+  );
+
+  sl.registerFactory<WebRTCBloc>(
+    () => WebRTCBloc(
+      signalingService: sl<SignalingService>(),
     ),
   );
 }
