@@ -1,0 +1,35 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_camera_view/features/camera_view/presentation/bloc/websocket_bloc/websocket.bloc.dart';
+import 'package:flutter_camera_view/features/camera_view/presentation/widgets/connect_failed.widget.dart';
+import 'package:flutter_camera_view/features/camera_view/presentation/widgets/no_camera.widget.dart';
+
+class CamerasSection extends StatefulWidget {
+  const CamerasSection({super.key});
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _ListCamerasWidgetState createState() => _ListCamerasWidgetState();
+}
+
+class _ListCamerasWidgetState extends State<CamerasSection> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(left: 10, right: 10),
+      child: BlocBuilder<WebSocketBloc, WebSocketState>(
+        builder: (wsContext, wsState) {
+          if (wsState is WsNotConnected) {
+            return const ConnectFailedWidget();
+          } else if (wsState is WsConnected && wsState.listCameras.isEmpty) {
+            return const NoCameraWidget();
+          } else if (wsState is WsConnected && wsState.listCameras.isNotEmpty) {
+            return Container();
+          } else {
+            return Container();
+          }
+        },
+      ),
+    );
+  }
+}

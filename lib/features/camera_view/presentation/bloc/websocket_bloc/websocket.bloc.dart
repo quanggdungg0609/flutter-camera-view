@@ -4,8 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_camera_view/core/services/signaling.service.dart';
 import 'package:flutter_camera_view/core/usecase.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/entities/camera_info.entity.dart';
+import 'package:flutter_camera_view/features/camera_view/domain/entities/ice_candidate.entity.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/entities/server_ws_message.entity.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/usescases/websocket_connect.usecase.dart';
+import 'package:flutter_camera_view/features/camera_view/domain/usescases/websocket_disconnect.usecase.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 part 'websocket.event.dart';
@@ -13,12 +15,21 @@ part 'websocket.state.dart';
 
 class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
   final WebSocketConnectUseCase connectUseCase;
+  final WebsocketDisconnectUseCase disconnectUseCase;
+
   final SignalingService signalingService;
 
   late Stream<ServerWsMessage> serverMessageStream;
-  late Stream<RTCSessionDescription> sessionDescriptrionStream;
 
-  WebSocketBloc({required this.connectUseCase, required this.signalingService}) : super(WsNotConnected()) {
+  late Stream<RTCSessionDescription> sessionDescriptrionStream;
+  late Stream<IceCandidate> iceCandidateRecvStream;
+  late Stream<IceCandidate> iceCandidateSendStream;
+
+  WebSocketBloc({
+    required this.connectUseCase,
+    required this.signalingService,
+    required this.disconnectUseCase,
+  }) : super(WsNotConnected()) {
     sessionDescriptrionStream = signalingService.sessionDescriptionStream;
     sessionDescriptrionStream.listen(
       (description) {
@@ -28,6 +39,8 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
       },
     );
 
+    // todo: init iceCandidate streams
+
     on<WsConnectEvent>(
       (event, emit) async {
         emit(WsConnecting());
@@ -35,7 +48,6 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
 
         failureOrConnected.fold(
           (failure) {
-            print(failure);
             emit(WsNotConnected());
           },
           (Stream<ServerWsMessage> messageStream) {
@@ -46,6 +58,21 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
               },
             );
             emit(WsConnected(listCameras: const []));
+          },
+        );
+      },
+    );
+
+    on<WsDisconnectEvent>(
+      (event, emit) async {
+        final failureOrDisconnected = await disconnectUseCase.call(NoParams());
+
+        failureOrDisconnected.fold(
+          (failure) {
+            // do nothing
+          },
+          (unit) {
+            emit(WsNotConnected());
           },
         );
       },
@@ -125,5 +152,14 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
           print("Unknow message type");
         }
     }
+  }
+
+  @override
+  Future<void> close() async {
+    add(WsDisconnectEvent());
+    await serverMessageStream.drain();
+    await sessionDescriptrionStream.drain();
+    await signalingService.dispose();
+    return super.close();
   }
 }

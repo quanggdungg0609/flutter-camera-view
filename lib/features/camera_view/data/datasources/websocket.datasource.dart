@@ -17,32 +17,31 @@ abstract class WebSocketDataSource {
 }
 
 class WebSocketDataSourceImpl extends WebSocketDataSource {
-  late final StreamController<ServerWsMessage> _messageController;
-  late final WebSocketChannel wsChannel;
+  final StreamController<ServerWsMessage> _messageController = StreamController<ServerWsMessage>.broadcast();
+  WebSocketChannel? wsChannel;
 
   @override
   Future<void> connect(String accountID, String uuid) async {
     try {
-      final wsUri = Uri.parse("${dotenv.env["WS_URI"]!}/ws/user/$accountID/$uuid/");
-      final channel = WebSocketChannel.connect(wsUri);
+      if (wsChannel == null) {
+        final wsUri = Uri.parse("${dotenv.env["WS_URI"]!}/ws/user/$accountID/$uuid/");
+        final channel = WebSocketChannel.connect(wsUri);
 
-      await channel.ready;
+        await channel.ready;
 
-      _messageController = StreamController<ServerWsMessage>.broadcast();
-      wsChannel = channel;
-      wsChannel.stream.listen(
-        (dynamic message) {
-          final messageJson = jsonDecode(message);
-          if (messageJson != null) {
-            final mess = _jsonToMessage(messageJson);
-            _messageController.add(mess!);
-          }
-        },
-      );
-
+        wsChannel = channel;
+        wsChannel!.stream.listen(
+          (dynamic message) {
+            final messageJson = jsonDecode(message);
+            if (messageJson != null) {
+              final mess = _jsonToMessage(messageJson);
+              _messageController.add(mess!);
+            }
+          },
+        );
+      }
       return;
     } catch (e) {
-      print(e);
       throw ConnectException();
     }
   }
@@ -50,7 +49,12 @@ class WebSocketDataSourceImpl extends WebSocketDataSource {
   @override
   Future<void> disconnect() async {
     try {
-      await wsChannel.sink.close(status.goingAway);
+      if (wsChannel != null) {
+        await wsChannel!.sink.close(status.normalClosure);
+        print("disconnected");
+        wsChannel = null;
+      }
+      return;
     } catch (_) {
       throw DisconnectException();
     }

@@ -9,6 +9,8 @@ sealed class WebSocketEvent extends Equatable {
 
 class WsConnectEvent extends WebSocketEvent {}
 
+class WsDisconnectEvent extends WebSocketEvent {}
+
 class WsSendMessageEvent extends WebSocketEvent {
   final Map<String, dynamic> message;
 

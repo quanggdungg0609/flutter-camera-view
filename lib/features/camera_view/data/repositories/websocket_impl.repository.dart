@@ -18,25 +18,31 @@ class WebSocketImplRepository extends WebSocketRepository {
     try {
       final uuid = await localDataSource.getUuid();
       if (uuid == null) {
+        print("halo");
         return Left(ConnectFailure());
       }
       final userInfo = await localDataSource.getUserInfo();
       if (userInfo == null) {
+        print("here");
         return Left(ConnectFailure());
       }
 
       await wsDataSource.connect(userInfo.userName, uuid);
-
       return Right(wsDataSource.message);
-    } catch (_) {
+    } catch (e) {
+      print(e);
       return Left(ConnectFailure());
     }
   }
 
   @override
-  Future<Either<Failure, Unit>> disconnect() {
-    // TODO: implement disconnect
-    throw UnimplementedError();
+  Future<Either<Failure, Unit>> disconnect() async {
+    try {
+      await wsDataSource.disconnect();
+      return const Right(unit);
+    } catch (_) {
+      return Left(DisconnectFailure());
+    }
   }
 
   @override

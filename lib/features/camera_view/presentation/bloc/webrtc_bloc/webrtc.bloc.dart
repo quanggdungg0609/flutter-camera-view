@@ -75,7 +75,9 @@ class WebRTCBloc extends Bloc<WebRTCEvent, WebRTCState> {
     final offfer = await _peer.getLocalDescription();
   }
 
-  Future<void> dispose() async {
-    await signalingService.dispose();
+  @override
+  Future<void> close() async {
+    await descriptionStream.drain();
+    return super.close();
   }
 }

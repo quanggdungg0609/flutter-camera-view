@@ -6,6 +6,7 @@ import "package:flutter_camera_view/features/camera_view/data/repositories/webso
 import "package:flutter_camera_view/features/camera_view/domain/repositories/websocket.repository.dart";
 import "package:flutter_camera_view/features/camera_view/domain/usescases/send_ws_message.usecase.dart";
 import "package:flutter_camera_view/features/camera_view/domain/usescases/websocket_connect.usecase.dart";
+import "package:flutter_camera_view/features/camera_view/domain/usescases/websocket_disconnect.usecase.dart";
 import "package:flutter_camera_view/features/camera_view/presentation/bloc/webrtc_bloc/webrtc.bloc.dart";
 import "package:flutter_camera_view/features/camera_view/presentation/bloc/websocket_bloc/websocket.bloc.dart";
 import "package:flutter_camera_view/features/login/data/datasources/auth.datasource.dart";
@@ -224,6 +225,12 @@ Future<void> _initalUseCases() async {
       wsRepository: sl<WebSocketRepository>(),
     ),
   );
+
+  sl.registerLazySingleton<WebsocketDisconnectUseCase>(
+    () => WebsocketDisconnectUseCase(
+      wsRepository: sl<WebSocketRepository>(),
+    ),
+  );
 }
 
 Future<void> _initalBlocs() async {
@@ -244,6 +251,7 @@ Future<void> _initalBlocs() async {
   sl.registerFactory<WebSocketBloc>(
     () => WebSocketBloc(
       connectUseCase: sl<WebSocketConnectUseCase>(),
+      disconnectUseCase: sl<WebsocketDisconnectUseCase>(),
       signalingService: sl<SignalingService>(),
     ),
   );
