@@ -21,3 +21,5 @@ class WsConnected extends WebSocketState {
 }
 
 class WsNotConnected extends WebSocketState {}
+
+class WsReconnecting extends WebSocketState {}

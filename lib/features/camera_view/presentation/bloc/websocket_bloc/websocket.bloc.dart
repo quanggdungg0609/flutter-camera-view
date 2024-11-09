@@ -6,6 +6,8 @@ import 'package:flutter_camera_view/core/usecase.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/entities/camera_info.entity.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/entities/ice_candidate.entity.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/entities/server_ws_message.entity.dart';
+import 'package:flutter_camera_view/features/camera_view/domain/entities/ws_message.entity.dart';
+import 'package:flutter_camera_view/features/camera_view/domain/usescases/send_ws_message.usecase.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/usescases/websocket_connect.usecase.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/usescases/websocket_disconnect.usecase.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -16,10 +18,11 @@ part 'websocket.state.dart';
 class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
   final WebSocketConnectUseCase connectUseCase;
   final WebsocketDisconnectUseCase disconnectUseCase;
+  final SendWsMessageUseCase sendWsMessageUseCase;
 
   final SignalingService signalingService;
 
-  late Stream<ServerWsMessage> serverMessageStream;
+  Stream<ServerWsMessage>? _serverMessageStream;
 
   late Stream<RTCSessionDescription> sessionDescriptrionStream;
   late Stream<IceCandidate> iceCandidateRecvStream;
@@ -29,6 +32,7 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
     required this.connectUseCase,
     required this.signalingService,
     required this.disconnectUseCase,
+    required this.sendWsMessageUseCase,
   }) : super(WsNotConnected()) {
     sessionDescriptrionStream = signalingService.sessionDescriptionStream;
     sessionDescriptrionStream.listen(
@@ -51,8 +55,8 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
             emit(WsNotConnected());
           },
           (Stream<ServerWsMessage> messageStream) {
-            serverMessageStream = messageStream;
-            serverMessageStream.listen(
+            _serverMessageStream = messageStream;
+            _serverMessageStream?.listen(
               (message) {
                 _handleServerWsMessage(message);
               },
@@ -78,6 +82,24 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
       },
     );
 
+    on<WsSendMessageEvent>(
+      (event, emit) async {
+        WsMessage message = WsMessage.fromMap(event.message);
+        final failureOrSendMess = await sendWsMessageUseCase.call(
+          SendMessageParams(message: message),
+        );
+
+        failureOrSendMess.fold(
+          (failure) {
+            // failed but do nothing
+          },
+          (unit) {
+            // success but do nothing
+          },
+        );
+      },
+    );
+
     on<WsResponseListCameraEvent>(
       (event, emit) async {
         var currentState = state;
@@ -93,7 +115,7 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
       (event, emit) async {
         final currentState = state;
         if (state is WsConnected) {
-          var listCamera = (state as WsConnected).listCameras;
+          List<CameraInfo> listCamera = List.from((state as WsConnected).listCameras);
           listCamera.add(event.camera);
           emit(
             (currentState as WsConnected).copyWith(
@@ -108,8 +130,8 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
       (event, emit) async {
         final currentState = state;
         if (state is WsConnected) {
-          var listCamera = (state as WsConnected).listCameras;
-          listCamera.remove(event.camera);
+          List<CameraInfo> listCamera = List.from((state as WsConnected).listCameras);
+          listCamera.removeWhere((camera) => camera.uuid == event.cameraUuid);
           emit(
             (currentState as WsConnected).copyWith(
               connectedCameras: listCamera,
@@ -144,7 +166,7 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
         break;
       case CameraDisconnectMessage cameraDisconnectMessage:
         add(
-          WsCameraDisconnect(camera: cameraDisconnectMessage.cameraInfo),
+          WsCameraDisconnect(cameraUuid: cameraDisconnectMessage.cameraUuuid),
         );
         break;
       default:
@@ -157,7 +179,8 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
   @override
   Future<void> close() async {
     add(WsDisconnectEvent());
-    await serverMessageStream.drain();
+    await _serverMessageStream?.drain();
+    _serverMessageStream = null;
     await sessionDescriptrionStream.drain();
     await signalingService.dispose();
     return super.close();

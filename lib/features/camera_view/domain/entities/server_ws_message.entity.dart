@@ -24,12 +24,12 @@ abstract class CameraConnectMessage extends ServerWsMessage {
 }
 
 abstract class CameraDisconnectMessage extends ServerWsMessage {
-  final CameraInfo cameraInfo;
+  final String cameraUuuid;
 
-  const CameraDisconnectMessage({required super.event, required this.cameraInfo});
+  const CameraDisconnectMessage({required super.event, required this.cameraUuuid});
 
   @override
-  List<Object?> get props => [event, cameraInfo];
+  List<Object?> get props => [event, cameraUuuid];
 }
 
 abstract class ResponseCameraListMessage extends ServerWsMessage {

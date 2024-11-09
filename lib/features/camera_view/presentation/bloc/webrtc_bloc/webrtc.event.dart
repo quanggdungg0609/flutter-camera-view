@@ -14,7 +14,14 @@ class WebRTCHaveLocalOfferEvent extends WebRTCEvent {
   List<Object?> get props => [sessionDescription];
 }
 
-class SelectCurrentCameraEvent extends WebRTCEvent {}
+class SelectCurrentCameraEvent extends WebRTCEvent {
+  final String currentCameraUuid;
+
+  SelectCurrentCameraEvent({required this.currentCameraUuid});
+
+  @override
+  List<Object?> get props => [currentCameraUuid];
+}
 
 class WebRTCAnswerOfferEvent extends WebRTCEvent {
   final RTCSessionDescription sessionDescription;

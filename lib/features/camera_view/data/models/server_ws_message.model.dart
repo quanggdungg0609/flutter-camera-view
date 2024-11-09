@@ -1,6 +1,5 @@
 import 'package:flutter_camera_view/features/camera_view/data/models/camera_info.model.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/entities/camera_info.entity.dart';
-import 'package:flutter_camera_view/features/camera_view/domain/entities/ice_candidate.entity.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/entities/server_ws_message.entity.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
@@ -14,11 +13,10 @@ class CameraConnectMessageModel extends CameraConnectMessage {
 }
 
 class CameraDisconnectMessageModel extends CameraDisconnectMessage {
-  const CameraDisconnectMessageModel({required super.event, required super.cameraInfo});
+  const CameraDisconnectMessageModel({required super.event, required super.cameraUuuid});
 
   factory CameraDisconnectMessageModel.fromJson(Map<String, dynamic> json) {
-    final cameraInfo = CameraInfoModel.fromJson(json["data"]);
-    return CameraDisconnectMessageModel(event: json["event"], cameraInfo: cameraInfo);
+    return CameraDisconnectMessageModel(event: json["event"], cameraUuuid: json["data"]["uuid"]);
   }
 }
 
@@ -27,7 +25,7 @@ class ResponseCameraListMessageModel extends ResponseCameraListMessage {
 
   factory ResponseCameraListMessageModel.fromJson(Map<String, dynamic> json) {
     List<CameraInfo> cameras = [];
-    for (final cameraJson in (json["data"] as List<Map<String, dynamic>>)) {
+    for (final cameraJson in (json["data"] as List<dynamic>)) {
       cameras.add(CameraInfoModel.fromJson(cameraJson));
     }
 

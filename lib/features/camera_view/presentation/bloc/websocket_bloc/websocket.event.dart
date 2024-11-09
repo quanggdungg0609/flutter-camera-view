@@ -39,12 +39,12 @@ class WsResponseListCameraEvent extends WebSocketEvent {
 }
 
 class WsCameraDisconnect extends WebSocketEvent {
-  final CameraInfo camera;
+  final String cameraUuid;
 
-  const WsCameraDisconnect({required this.camera});
+  const WsCameraDisconnect({required this.cameraUuid});
 
   @override
-  List<Object?> get props => [camera];
+  List<Object?> get props => [cameraUuid];
 }
 
 class WsAnswerSDEvent extends WebSocketEvent {
@@ -55,3 +55,5 @@ class WsAnswerSDEvent extends WebSocketEvent {
   @override
   List<Object?> get props => [sessionDescription];
 }
+
+class WsReconnectingEvent extends WebSocketEvent {}

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_camera_view/features/camera_view/presentation/bloc/websocket_bloc/websocket.bloc.dart';
 import 'package:flutter_camera_view/features/camera_view/presentation/widgets/connect_failed.widget.dart';
+import 'package:flutter_camera_view/features/camera_view/presentation/widgets/list_cameras.widget.dart';
 import 'package:flutter_camera_view/features/camera_view/presentation/widgets/no_camera.widget.dart';
 
 class CamerasSection extends StatefulWidget {
@@ -13,6 +14,8 @@ class CamerasSection extends StatefulWidget {
 }
 
 class _ListCamerasWidgetState extends State<CamerasSection> {
+  bool isRequestCamera = false;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -24,7 +27,7 @@ class _ListCamerasWidgetState extends State<CamerasSection> {
           } else if (wsState is WsConnected && wsState.listCameras.isEmpty) {
             return const NoCameraWidget();
           } else if (wsState is WsConnected && wsState.listCameras.isNotEmpty) {
-            return Container();
+            return const ListCamerasWidget();
           } else {
             return Container();
           }

@@ -18,19 +18,16 @@ class WebSocketImplRepository extends WebSocketRepository {
     try {
       final uuid = await localDataSource.getUuid();
       if (uuid == null) {
-        print("halo");
         return Left(ConnectFailure());
       }
       final userInfo = await localDataSource.getUserInfo();
       if (userInfo == null) {
-        print("here");
         return Left(ConnectFailure());
       }
 
       await wsDataSource.connect(userInfo.userName, uuid);
       return Right(wsDataSource.message);
     } catch (e) {
-      print(e);
       return Left(ConnectFailure());
     }
   }

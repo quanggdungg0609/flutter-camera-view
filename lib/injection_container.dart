@@ -252,6 +252,7 @@ Future<void> _initalBlocs() async {
     () => WebSocketBloc(
       connectUseCase: sl<WebSocketConnectUseCase>(),
       disconnectUseCase: sl<WebsocketDisconnectUseCase>(),
+      sendWsMessageUseCase: sl<SendWsMessageUseCase>(),
       signalingService: sl<SignalingService>(),
     ),
   );

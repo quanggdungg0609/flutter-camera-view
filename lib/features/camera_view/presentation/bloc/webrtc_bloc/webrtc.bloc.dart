@@ -12,7 +12,7 @@ part 'webrtc.state.dart';
 
 class WebRTCBloc extends Bloc<WebRTCEvent, WebRTCState> {
   late RTCPeerConnection _peer;
-  late String currentCameraUUID;
+  String currentCameraUUID = "";
 
   final SignalingService signalingService;
 
@@ -29,7 +29,8 @@ class WebRTCBloc extends Bloc<WebRTCEvent, WebRTCState> {
       (event, emit) async {
         final currentState = state;
         if (state is WebRTCIntial) {
-          await _createPeer();
+          currentCameraUUID = event.currentCameraUuid;
+          // await _createPeer();
         } else if (currentState is WebRTCConnected) {}
       },
     );
@@ -78,6 +79,9 @@ class WebRTCBloc extends Bloc<WebRTCEvent, WebRTCState> {
   @override
   Future<void> close() async {
     await descriptionStream.drain();
+    await iceCandidateRecvStream.drain();
+    await iceCandidateSendStream.drain();
+
     return super.close();
   }
 }

@@ -23,7 +23,6 @@ class AccountInfoBloc extends Bloc<AccountInfoEvent, AccountInfoState> {
     // * Fetch account info data from secure storage
     on<FetchAccountInfoEvent>(
       (event, emit) async {
-        print("Fetching data");
         emit(FetchingAccountInfoState());
         final failureOrFetchData = await fetchAccountInfoUseCase.call(NoParams());
 

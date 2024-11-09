@@ -14,6 +14,7 @@ class CameraViewPage extends StatefulWidget {
 
 class _CameraViewPageState extends State<CameraViewPage> with WidgetsBindingObserver {
   AppLifecycleState _state = AppLifecycleState.resumed;
+  BuildContext? _loadingDialogContext;
 
   @override
   void initState() {
@@ -41,9 +42,7 @@ class _CameraViewPageState extends State<CameraViewPage> with WidgetsBindingObse
   Widget build(BuildContext context) {
     if (_state == AppLifecycleState.paused) {
       sl<WebSocketBloc>().add(WsDisconnectEvent());
-    } else if (_state == AppLifecycleState.resumed) {
-      sl<WebSocketBloc>().add(WsConnectEvent());
-    }
+    } else if (_state == AppLifecycleState.resumed) {}
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: MultiBlocProvider(
@@ -61,19 +60,36 @@ class _CameraViewPageState extends State<CameraViewPage> with WidgetsBindingObse
             builder: (layoutBuilderContext, constraints) {
               final scaffoldHeight = constraints.maxHeight;
               return BlocListener<WebSocketBloc, WebSocketState>(
-                listener: (context, state) {
+                listener: (wsListenerContext, state) {
                   if (state is WsConnecting) {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (BuildContext context) {
-                        return const Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      },
-                    );
+                    if (_loadingDialogContext == null) {
+                      showDialog(
+                        context: wsListenerContext,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          _loadingDialogContext = context;
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        },
+                      );
+                    }
                   } else {
-                    Navigator.of(context, rootNavigator: true).pop();
+                    if (_loadingDialogContext != null) {
+                      Navigator.of(_loadingDialogContext!, rootNavigator: true).pop();
+                      _loadingDialogContext = null;
+                    }
+                  }
+
+                  if (state is WsConnected) {
+                    print(state);
+                    BlocProvider.of<WebSocketBloc>(wsListenerContext).add(
+                      const WsSendMessageEvent(
+                        message: {
+                          "event": "request-list-camera",
+                        },
+                      ),
+                    );
                   }
                 },
                 child: Stack(
@@ -84,7 +100,7 @@ class _CameraViewPageState extends State<CameraViewPage> with WidgetsBindingObse
                       right: 0,
                       height: scaffoldHeight / 3,
                       child: Container(
-                        color: Colors.blue,
+                        color: Colors.transparent,
                       ),
                     ),
                     Positioned(
