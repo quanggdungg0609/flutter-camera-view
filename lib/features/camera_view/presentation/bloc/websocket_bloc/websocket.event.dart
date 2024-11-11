@@ -48,12 +48,12 @@ class WsCameraDisconnect extends WebSocketEvent {
 }
 
 class WsAnswerSDEvent extends WebSocketEvent {
-  final RTCSessionDescription sessionDescription;
+  final AnswerSDMessage answer;
 
-  const WsAnswerSDEvent({required this.sessionDescription});
+  const WsAnswerSDEvent({required this.answer});
 
   @override
-  List<Object?> get props => [sessionDescription];
+  List<Object?> get props => [answer];
 }
 
 class WsReconnectingEvent extends WebSocketEvent {}

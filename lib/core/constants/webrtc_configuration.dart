@@ -5,6 +5,7 @@ const Map<String, dynamic> iceServesConfig = {
     },
     {"urls": 'stun:stun.services.mozilla.com'},
   ],
+  'iceCandidatePoolSize': 1,
 };
 
 const String sdpSemantics = 'unified-plan';

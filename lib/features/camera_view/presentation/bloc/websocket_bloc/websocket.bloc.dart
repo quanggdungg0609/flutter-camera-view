@@ -20,12 +20,14 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
   final WebsocketDisconnectUseCase disconnectUseCase;
   final SendWsMessageUseCase sendWsMessageUseCase;
 
-  final SignalingService signalingService;
-
   Stream<ServerWsMessage>? _serverMessageStream;
 
-  late Stream<RTCSessionDescription> sessionDescriptrionStream;
+  final SignalingService signalingService;
+
+  late Stream<OfferSDMessage> _offerStream;
+
   late Stream<IceCandidate> iceCandidateRecvStream;
+
   late Stream<IceCandidate> iceCandidateSendStream;
 
   WebSocketBloc({
@@ -34,13 +36,9 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
     required this.disconnectUseCase,
     required this.sendWsMessageUseCase,
   }) : super(WsNotConnected()) {
-    sessionDescriptrionStream = signalingService.sessionDescriptionStream;
-    sessionDescriptrionStream.listen(
-      (description) {
-        if (description.type == "offer") {
-          // send message later
-        }
-      },
+    _offerStream = signalingService.offerStream;
+    _offerStream.listen(
+      (offer) {},
     );
 
     // todo: init iceCandidate streams
@@ -145,8 +143,9 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
       (event, emit) async {
         final currentState = state;
         if (currentState is WsConnected) {
-          final sessionDescription = event.sessionDescription;
-          signalingService.sendSessionDesciption(sessionDescription);
+          final answer = event.answer;
+
+          signalingService.sendAnswer(answer);
         }
       },
     );
@@ -169,6 +168,8 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
           WsCameraDisconnect(cameraUuid: cameraDisconnectMessage.cameraUuuid),
         );
         break;
+      case AnswerSDMessage answerSDMessage:
+        add(WsAnswerSDEvent(answer: answerSDMessage));
       default:
         if (kDebugMode) {
           print("Unknow message type");
@@ -181,7 +182,7 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
     add(WsDisconnectEvent());
     await _serverMessageStream?.drain();
     _serverMessageStream = null;
-    await sessionDescriptrionStream.drain();
+    await _offerStream.drain();
     await signalingService.dispose();
     return super.close();
   }

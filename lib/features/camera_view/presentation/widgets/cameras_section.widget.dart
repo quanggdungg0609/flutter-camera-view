@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_camera_view/features/camera_view/presentation/bloc/websocket_bloc/websocket.bloc.dart';
 import 'package:flutter_camera_view/features/camera_view/presentation/widgets/connect_failed.widget.dart';
 import 'package:flutter_camera_view/features/camera_view/presentation/widgets/list_cameras.widget.dart';
-import 'package:flutter_camera_view/features/camera_view/presentation/widgets/no_camera.widget.dart';
 
 class CamerasSection extends StatefulWidget {
   const CamerasSection({super.key});
@@ -22,14 +21,33 @@ class _ListCamerasWidgetState extends State<CamerasSection> {
       padding: const EdgeInsets.only(left: 10, right: 10),
       child: BlocBuilder<WebSocketBloc, WebSocketState>(
         builder: (wsContext, wsState) {
-          if (wsState is WsNotConnected) {
-            return const ConnectFailedWidget();
-          } else if (wsState is WsConnected && wsState.listCameras.isEmpty) {
-            return const NoCameraWidget();
-          } else if (wsState is WsConnected && wsState.listCameras.isNotEmpty) {
-            return const ListCamerasWidget();
+          if (wsState is WsConnected) {
+            return const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                    "List des caméras",
+                    style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black54,
+                      shadows: [
+                        Shadow(
+                          color: Colors.white,
+                          offset: Offset(1, 1),
+                          blurRadius: 20,
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(child: ListCamerasWidget()),
+              ],
+            );
           } else {
-            return Container();
+            return const ConnectFailedWidget();
           }
         },
       ),

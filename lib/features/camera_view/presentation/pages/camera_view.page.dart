@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_camera_view/features/camera_view/presentation/bloc/camera_select_cubit/camera_select.cubit.dart';
 import 'package:flutter_camera_view/features/camera_view/presentation/bloc/webrtc_bloc/webrtc.bloc.dart';
 import 'package:flutter_camera_view/features/camera_view/presentation/bloc/websocket_bloc/websocket.bloc.dart';
 import 'package:flutter_camera_view/features/camera_view/presentation/widgets/cameras_section.widget.dart';
+import 'package:flutter_camera_view/features/camera_view/presentation/widgets/live_video_section.widget.dart';
 import 'package:flutter_camera_view/injection_container.dart';
 
 class CameraViewPage extends StatefulWidget {
@@ -15,6 +17,7 @@ class CameraViewPage extends StatefulWidget {
 class _CameraViewPageState extends State<CameraViewPage> with WidgetsBindingObserver {
   AppLifecycleState _state = AppLifecycleState.resumed;
   BuildContext? _loadingDialogContext;
+  bool _isRequest = false;
 
   @override
   void initState() {
@@ -53,7 +56,12 @@ class _CameraViewPageState extends State<CameraViewPage> with WidgetsBindingObse
                 WsConnectEvent(),
               ),
           ),
-          BlocProvider<WebRTCBloc>(create: (_) => sl<WebRTCBloc>()),
+          BlocProvider<WebRTCBloc>(
+            create: (_) => sl<WebRTCBloc>(),
+          ),
+          BlocProvider<CameraSelectCubit>(
+            create: (_) => sl<CameraSelectCubit>(),
+          ),
         ],
         child: SafeArea(
           child: LayoutBuilder(
@@ -83,13 +91,21 @@ class _CameraViewPageState extends State<CameraViewPage> with WidgetsBindingObse
 
                   if (state is WsConnected) {
                     print(state);
-                    BlocProvider.of<WebSocketBloc>(wsListenerContext).add(
-                      const WsSendMessageEvent(
-                        message: {
-                          "event": "request-list-camera",
+                    if (!_isRequest) {
+                      BlocProvider.of<WebSocketBloc>(wsListenerContext).add(
+                        const WsSendMessageEvent(
+                          message: {
+                            "event": "request-list-camera",
+                          },
+                        ),
+                      );
+                      setState(
+                        () {
+                          _isRequest = true;
                         },
-                      ),
-                    );
+                      );
+                    }
+                    BlocProvider.of<CameraSelectCubit>(layoutBuilderContext).setCameras(state.listCameras);
                   }
                 },
                 child: Stack(
@@ -99,9 +115,7 @@ class _CameraViewPageState extends State<CameraViewPage> with WidgetsBindingObse
                       left: 0,
                       right: 0,
                       height: scaffoldHeight / 3,
-                      child: Container(
-                        color: Colors.transparent,
-                      ),
+                      child: const LiveVideoSection(),
                     ),
                     Positioned(
                       top: scaffoldHeight / 3,

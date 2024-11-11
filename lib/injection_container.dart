@@ -2,11 +2,15 @@ import "dart:io";
 import "package:dio/dio.dart";
 import "package:flutter_camera_view/core/services/signaling.service.dart";
 import "package:flutter_camera_view/features/camera_view/data/datasources/websocket.datasource.dart";
+import "package:flutter_camera_view/features/camera_view/data/repositories/local_resource_impl.repository.dart";
 import "package:flutter_camera_view/features/camera_view/data/repositories/websocket_impl.repository.dart";
+import "package:flutter_camera_view/features/camera_view/domain/repositories/local_resource.repository.dart";
 import "package:flutter_camera_view/features/camera_view/domain/repositories/websocket.repository.dart";
+import "package:flutter_camera_view/features/camera_view/domain/usescases/get_own_uuid.usecase.dart";
 import "package:flutter_camera_view/features/camera_view/domain/usescases/send_ws_message.usecase.dart";
 import "package:flutter_camera_view/features/camera_view/domain/usescases/websocket_connect.usecase.dart";
 import "package:flutter_camera_view/features/camera_view/domain/usescases/websocket_disconnect.usecase.dart";
+import "package:flutter_camera_view/features/camera_view/presentation/bloc/camera_select_cubit/camera_select.cubit.dart";
 import "package:flutter_camera_view/features/camera_view/presentation/bloc/webrtc_bloc/webrtc.bloc.dart";
 import "package:flutter_camera_view/features/camera_view/presentation/bloc/websocket_bloc/websocket.bloc.dart";
 import "package:flutter_camera_view/features/login/data/datasources/auth.datasource.dart";
@@ -65,6 +69,7 @@ Future<void> initializeDependencies() async {
   await _initalBlocs();
 }
 
+// * Datasources initial
 Future<void> _initialDataSources() async {
   // create box of hive
   sl.registerSingletonAsync<BoxCollection>(() async {
@@ -167,6 +172,7 @@ Future<void> _initialDataSources() async {
   );
 }
 
+// * Repositories initial
 Future<void> _initialRepositories() async {
   sl.registerSingleton<AuthRepository>(
     AuthRepositoryImpl(
@@ -187,8 +193,15 @@ Future<void> _initialRepositories() async {
       wsDataSource: sl<WebSocketDataSource>(),
     ),
   );
+
+  sl.registerSingleton<LocalResourceRepository>(
+    LocalResourceImplRepository(
+      localDataSource: sl<LocalDataSource>(),
+    ),
+  );
 }
 
+// * Usecases Initial
 Future<void> _initalUseCases() async {
   sl.registerLazySingleton<LoginUseCase>(
     () => LoginUseCase(
@@ -231,8 +244,15 @@ Future<void> _initalUseCases() async {
       wsRepository: sl<WebSocketRepository>(),
     ),
   );
+
+  sl.registerLazySingleton<GetOwnUuidUseCase>(
+    () => GetOwnUuidUseCase(
+      repository: sl<LocalResourceRepository>(),
+    ),
+  );
 }
 
+// * BLOCs initial
 Future<void> _initalBlocs() async {
   sl.registerFactory<AuthBloc>(
     () => AuthBloc(
@@ -260,6 +280,11 @@ Future<void> _initalBlocs() async {
   sl.registerFactory<WebRTCBloc>(
     () => WebRTCBloc(
       signalingService: sl<SignalingService>(),
+      getOwnUuidUseCase: sl<GetOwnUuidUseCase>(),
     ),
+  );
+
+  sl.registerFactory<CameraSelectCubit>(
+    () => CameraSelectCubit(),
   );
 }
