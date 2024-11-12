@@ -40,3 +40,17 @@ class RemoteRendererReadyEvent extends WebRTCEvent {
   @override
   List<Object?> get props => [remoteRenderer];
 }
+
+class WebRTCDisconnectingEvent extends WebRTCEvent {}
+
+class WebRTCConnectingEvent extends WebRTCEvent {}
+
+class WebRTCConnectedEvent extends WebRTCEvent {}
+
+class WebRTCNewEvent extends WebRTCEvent {}
+
+class WebRTCDisconnectedEvent extends WebRTCEvent {}
+
+class WebRTCFailedEvent extends WebRTCEvent {}
+
+class WebRTCClosedEvent extends WebRTCEvent {}

@@ -10,7 +10,6 @@ import 'package:flutter_camera_view/features/camera_view/domain/entities/ws_mess
 import 'package:flutter_camera_view/features/camera_view/domain/usescases/send_ws_message.usecase.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/usescases/websocket_connect.usecase.dart';
 import 'package:flutter_camera_view/features/camera_view/domain/usescases/websocket_disconnect.usecase.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 part 'websocket.event.dart';
 part 'websocket.state.dart';
@@ -38,7 +37,16 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
   }) : super(WsNotConnected()) {
     _offerStream = signalingService.offerStream;
     _offerStream.listen(
-      (offer) {},
+      (offer) async {
+        final failureOrSendMess = await sendWsMessageUseCase.call(SendMessageParams(message: offer));
+        failureOrSendMess.fold((failure) {
+          // todo: send noti
+          print("failed");
+        }, (unit) {
+          // todo: success
+          print("success");
+        });
+      },
     );
 
     // todo: init iceCandidate streams

@@ -26,13 +26,20 @@ class WebRTCBloc extends Bloc<WebRTCEvent, WebRTCState> {
   late Stream<AnswerSDMessage> _answerStream;
 
   late Stream<IceCandidate> iceCandidateRecvStream;
-  late Stream<IceCandidate> iceCandidateSendStream;
 
   WebRTCBloc({required this.signalingService, required this.getOwnUuidUseCase}) : super(WebRTCIntial()) {
     _initial();
-    _answerStream = signalingService.answerStream;
     iceCandidateRecvStream = signalingService.iceCandidateRecvStream;
-    iceCandidateSendStream = signalingService.iceCandidateSendStream;
+
+    _answerStream = signalingService.answerStream;
+
+    _answerStream.listen(
+      (answer) async {
+        if (_peer != null) {
+          await _peer!.setRemoteDescription(answer.sessionDescription);
+        }
+      },
+    );
 
     on<SelectCurrentCameraEvent>(
       (event, emit) async {
@@ -43,6 +50,59 @@ class WebRTCBloc extends Bloc<WebRTCEvent, WebRTCState> {
         } else if (currentState is WebRTCConnected) {
           _currentCameraUUID = event.currentCameraUuid;
         }
+      },
+    );
+
+    on<WebRTCConnectingEvent>(
+      (event, emit) {
+        emit(WebRTCConnecting());
+      },
+    );
+
+    on<WebRTCConnectedEvent>(
+      (event, emit) {
+        emit(WebRTCConnected());
+      },
+    );
+
+    on<WebRTCClosedEvent>(
+      (event, emit) {
+        emit(WebRTCClosed());
+      },
+    );
+
+    on<WebRTCDisconnectedEvent>(
+      (event, emit) {
+        emit(WebRTCDisconnected());
+      },
+    );
+
+    on<WebRTCFailedEvent>(
+      (event, emit) {
+        emit(WebRTCFailed());
+      },
+    );
+
+    on<WebRTCNewEvent>(
+      (event, emit) {
+        emit(WebRTCNew());
+      },
+    );
+
+    on<RemoteRendererReadyEvent>((event, emit) async {
+      print(event.remoteRenderer);
+      if (state is WebRTCConnected) {
+        emit((state as WebRTCConnected).copyWith(event.remoteRenderer));
+      } else {
+        emit(
+          WebRTCConnected(remoteRender: event.remoteRenderer),
+        );
+      }
+    });
+
+    on<WebRTCDisconnectingEvent>(
+      (event, emit) async {
+        // TODO: need to implements disconnect mechanic
       },
     );
   }
@@ -61,13 +121,34 @@ class WebRTCBloc extends Bloc<WebRTCEvent, WebRTCState> {
       signalingService.addIceCandidateSend(ice);
     };
 
-    _peer!.onIceGatheringState = ((state) {
+    _peer!.onIceGatheringState = ((RTCIceGatheringState state) {
       if (state == RTCIceGatheringState.RTCIceGatheringStateComplete) {
         if (!iceGatheringCompleter.isCompleted) {
           iceGatheringCompleter.complete();
         }
       }
     });
+
+    _peer!.onConnectionState = (RTCPeerConnectionState state) async {
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnecting) {
+        add(WebRTCConnectingEvent());
+      }
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
+        add(WebRTCConnectedEvent());
+      }
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateNew) {
+        add(WebRTCNewEvent());
+      }
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed) {
+        add(WebRTCFailedEvent());
+      }
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
+        add(WebRTCClosedEvent());
+      }
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected) {
+        add(WebRTCDisconnectedEvent());
+      }
+    };
 
     _peer!.onTrack = (RTCTrackEvent event) async {
       if (event.track.kind == "video") {
@@ -112,7 +193,6 @@ class WebRTCBloc extends Bloc<WebRTCEvent, WebRTCState> {
     await _answerStream.drain();
 
     await iceCandidateRecvStream.drain();
-    await iceCandidateSendStream.drain();
 
     return super.close();
   }
