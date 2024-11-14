@@ -45,29 +45,31 @@ class CameraCardWidget extends StatelessWidget {
                   color: Colors.grey.shade400,
                   width: 30,
                 ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      cameraInfo.name,
-                      style: TextStyle(
-                        color: isActive ? Colors.blueAccent.shade400 : Colors.grey.shade500,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 20,
-                        overflow: TextOverflow.ellipsis,
+                SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        cameraInfo.name,
+                        style: TextStyle(
+                          color: isActive ? Colors.blueAccent.shade400 : Colors.grey.shade500,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 20,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                    Text(
-                      cameraInfo.location,
-                      style: TextStyle(
-                        color: isActive ? Colors.grey.shade800 : Colors.grey.shade400,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15,
-                        overflow: TextOverflow.ellipsis,
+                      Text(
+                        cameraInfo.location,
+                        style: TextStyle(
+                          color: isActive ? Colors.grey.shade800 : Colors.grey.shade400,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 )
               ],
             ),

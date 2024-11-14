@@ -28,7 +28,7 @@ class _ListCamerasWidgetState extends State<CamerasSection> {
                 Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Text(
-                    "List des caméras",
+                    "La liste des resources",
                     style: TextStyle(
                       fontSize: 25,
                       fontWeight: FontWeight.w700,

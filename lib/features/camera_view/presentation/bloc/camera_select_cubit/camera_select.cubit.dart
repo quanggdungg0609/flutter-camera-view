@@ -5,7 +5,7 @@ import 'package:flutter_camera_view/features/camera_view/domain/entities/camera_
 part 'camera_select.state.dart';
 
 class CameraSelectCubit extends Cubit<CameraSelectState> {
-  CameraSelectCubit() : super(const CameraSelectState());
+  CameraSelectCubit() : super(const CameraSelectState()) {}
 
   void setCameras(List<CameraInfo> cameras) {
     final updatedSelectedCameraUuid = cameras.isEmpty
@@ -25,5 +25,10 @@ class CameraSelectCubit extends Cubit<CameraSelectState> {
     if (state.selectedCameraUuid != cameraUuid) {
       emit(state.copyWith(cameraSelectUuid: cameraUuid));
     }
+  }
+
+  @override
+  Future<void> close() {
+    return super.close();
   }
 }

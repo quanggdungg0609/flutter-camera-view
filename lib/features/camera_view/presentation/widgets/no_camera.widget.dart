@@ -35,7 +35,7 @@ class NoCameraWidget extends StatelessWidget {
                 padding: EdgeInsets.all(5),
               ),
               Text(
-                "Il n'y a aucun camera connected",
+                "Il n'y a aucun camera connecté",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.grey,

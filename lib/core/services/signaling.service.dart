@@ -4,11 +4,11 @@ import 'package:flutter_camera_view/features/camera_view/domain/entities/ws_mess
 import 'package:rxdart/subjects.dart';
 
 class SignalingService {
-  final _offerDescriptionController = PublishSubject<OfferSDMessage>();
-  final _answerDescriptionController = PublishSubject<AnswerSDMessage>();
+  PublishSubject<OfferSDMessage> _offerDescriptionController = PublishSubject<OfferSDMessage>();
+  PublishSubject<AnswerSDMessage> _answerDescriptionController = PublishSubject<AnswerSDMessage>();
 
-  final _iceCandidateRecvController = PublishSubject<IceCandidate>();
-  final _iceCandidateSendController = PublishSubject<IceCandidate>();
+  PublishSubject<IceCandidate> _iceCandidateRecvController = PublishSubject<IceCandidate>();
+  PublishSubject<IceCandidate> _iceCandidateSendController = PublishSubject<IceCandidate>();
 
   Stream<OfferSDMessage> get offerStream => _offerDescriptionController.stream;
   Stream<AnswerSDMessage> get answerStream => _answerDescriptionController.stream;
@@ -33,9 +33,15 @@ class SignalingService {
   }
 
   Future<void> dispose() async {
-    await _answerDescriptionController.close();
     await _offerDescriptionController.close();
+    await _answerDescriptionController.close();
     await _iceCandidateSendController.close();
     await _iceCandidateRecvController.close();
+
+    // Reinitialize the controllers
+    _offerDescriptionController = PublishSubject<OfferSDMessage>();
+    _answerDescriptionController = PublishSubject<AnswerSDMessage>();
+    _iceCandidateRecvController = PublishSubject<IceCandidate>();
+    _iceCandidateSendController = PublishSubject<IceCandidate>();
   }
 }

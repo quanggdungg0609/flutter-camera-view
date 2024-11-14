@@ -12,13 +12,16 @@ class WebRTCNew extends WebRTCState {}
 class WebRTCConnecting extends WebRTCState {}
 
 class WebRTCConnected extends WebRTCState {
-  final RTCVideoRenderer? remoteRender;
+  final MediaStream? stream;
 
-  WebRTCConnected({this.remoteRender});
+  WebRTCConnected({this.stream});
 
-  WebRTCConnected copyWith(RTCVideoRenderer remote) {
-    return WebRTCConnected(remoteRender: remote);
+  WebRTCConnected copyWith(MediaStream stream) {
+    return WebRTCConnected(stream: stream);
   }
+
+  @override
+  List<Object?> get props => [stream];
 }
 
 class WebRTCClosed extends WebRTCState {}

@@ -23,23 +23,29 @@ class WebRTCBloc extends Bloc<WebRTCEvent, WebRTCState> {
 
   final SignalingService signalingService;
 
-  late Stream<AnswerSDMessage> _answerStream;
+  StreamSubscription<AnswerSDMessage>? _answerStreamSubcriptionController;
 
-  late Stream<IceCandidate> iceCandidateRecvStream;
+  StreamSubscription<IceCandidate>? iceCandidateRecvStreamSubcriptionController;
+
+  bool _isAnswerStreamSubscribed = false;
 
   WebRTCBloc({required this.signalingService, required this.getOwnUuidUseCase}) : super(WebRTCIntial()) {
     _initial();
-    iceCandidateRecvStream = signalingService.iceCandidateRecvStream;
 
-    _answerStream = signalingService.answerStream;
+    if (!_isAnswerStreamSubscribed) {
+      _isAnswerStreamSubscribed = true;
 
-    _answerStream.listen(
-      (answer) async {
-        if (_peer != null) {
-          await _peer!.setRemoteDescription(answer.sessionDescription);
-        }
-      },
-    );
+      _answerStreamSubcriptionController = signalingService.answerStream.listen(
+        (answer) async {
+          if (_peer != null) {
+            await _peer!.setRemoteDescription(answer.sessionDescription);
+          }
+        },
+      );
+      iceCandidateRecvStreamSubcriptionController = signalingService.iceCandidateRecvStream.listen((iceCandidate) {
+        // todo:
+      });
+    }
 
     on<SelectCurrentCameraEvent>(
       (event, emit) async {
@@ -90,19 +96,20 @@ class WebRTCBloc extends Bloc<WebRTCEvent, WebRTCState> {
     );
 
     on<RemoteRendererReadyEvent>((event, emit) async {
-      print(event.remoteRenderer);
       if (state is WebRTCConnected) {
-        emit((state as WebRTCConnected).copyWith(event.remoteRenderer));
+        emit((state as WebRTCConnected).copyWith(event.stream));
       } else {
         emit(
-          WebRTCConnected(remoteRender: event.remoteRenderer),
+          WebRTCConnected(stream: event.stream),
         );
       }
     });
 
     on<WebRTCDisconnectingEvent>(
       (event, emit) async {
-        // TODO: need to implements disconnect mechanic
+        if (_peer != null && state is WebRTCConnected) {
+          await _peer?.close();
+        }
       },
     );
   }
@@ -130,34 +137,33 @@ class WebRTCBloc extends Bloc<WebRTCEvent, WebRTCState> {
     });
 
     _peer!.onConnectionState = (RTCPeerConnectionState state) async {
-      if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnecting) {
-        add(WebRTCConnectingEvent());
-      }
-      if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
-        add(WebRTCConnectedEvent());
-      }
-      if (state == RTCPeerConnectionState.RTCPeerConnectionStateNew) {
-        add(WebRTCNewEvent());
-      }
-      if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed) {
-        add(WebRTCFailedEvent());
-      }
-      if (state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
-        add(WebRTCClosedEvent());
-      }
-      if (state == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected) {
-        add(WebRTCDisconnectedEvent());
+      if (!isClosed) {
+        if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnecting) {
+          add(WebRTCConnectingEvent());
+        }
+        if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
+          add(WebRTCConnectedEvent());
+        }
+        if (state == RTCPeerConnectionState.RTCPeerConnectionStateNew) {
+          add(WebRTCNewEvent());
+        }
+        if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed) {
+          add(WebRTCFailedEvent());
+        }
+        if (state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
+          add(WebRTCClosedEvent());
+        }
+        if (state == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected) {
+          add(WebRTCDisconnectedEvent());
+        }
       }
     };
 
     _peer!.onTrack = (RTCTrackEvent event) async {
       if (event.track.kind == "video") {
-        RTCVideoRenderer remoteRenderer = RTCVideoRenderer();
-        await remoteRenderer.initialize();
-        remoteRenderer.srcObject = event.streams[0];
         add(
           RemoteRendererReadyEvent(
-            remoteRenderer: remoteRenderer,
+            stream: event.streams[0],
           ),
         );
       }
@@ -190,10 +196,15 @@ class WebRTCBloc extends Bloc<WebRTCEvent, WebRTCState> {
 
   @override
   Future<void> close() async {
-    await _answerStream.drain();
+    _peer = null;
+    _currentCameraUUID = "";
+    _answerStreamSubcriptionController!.cancel();
+    _answerStreamSubcriptionController = null;
+    iceCandidateRecvStreamSubcriptionController!.cancel();
+    iceCandidateRecvStreamSubcriptionController = null;
 
-    await iceCandidateRecvStream.drain();
-
+    _isAnswerStreamSubscribed = false; // Reset the subscription flag
+    signalingService.dispose();
     return super.close();
   }
 

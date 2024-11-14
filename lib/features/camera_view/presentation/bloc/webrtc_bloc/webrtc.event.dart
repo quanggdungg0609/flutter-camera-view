@@ -33,12 +33,12 @@ class WebRTCAnswerOfferEvent extends WebRTCEvent {
 }
 
 class RemoteRendererReadyEvent extends WebRTCEvent {
-  final RTCVideoRenderer remoteRenderer;
+  final MediaStream stream;
 
-  RemoteRendererReadyEvent({required this.remoteRenderer});
+  RemoteRendererReadyEvent({required this.stream});
 
   @override
-  List<Object?> get props => [remoteRenderer];
+  List<Object?> get props => [stream];
 }
 
 class WebRTCDisconnectingEvent extends WebRTCEvent {}

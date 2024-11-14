@@ -52,12 +52,12 @@ class AccountInfoBloc extends Bloc<AccountInfoEvent, AccountInfoState> {
           (failure) {
             // * do nothing
             if (kDebugMode) {
-              print("Error saving account info: $failure");
+              // print("Error saving account info: $failure");
             }
           },
           (unit) {
             if (kDebugMode) {
-              print("Account info saved successfully");
+              // print("Account info saved successfully");
             }
             // * do nothing
           },

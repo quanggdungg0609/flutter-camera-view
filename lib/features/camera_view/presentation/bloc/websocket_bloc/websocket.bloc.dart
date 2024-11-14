@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,15 +21,14 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
   final WebsocketDisconnectUseCase disconnectUseCase;
   final SendWsMessageUseCase sendWsMessageUseCase;
 
-  Stream<ServerWsMessage>? _serverMessageStream;
+  StreamSubscription<ServerWsMessage>? _serverMessageStreamSubcriptionController;
 
   final SignalingService signalingService;
+  late StreamSubscription<OfferSDMessage> _offerStreamSubcriptionController;
 
-  late Stream<OfferSDMessage> _offerStream;
+  late StreamSubscription<IceCandidate> _iceCandidateRecvStreamController;
 
-  late Stream<IceCandidate> iceCandidateRecvStream;
-
-  late Stream<IceCandidate> iceCandidateSendStream;
+  late StreamSubscription<IceCandidate> _iceCandidateSendStreamController;
 
   WebSocketBloc({
     required this.connectUseCase,
@@ -35,8 +36,7 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
     required this.disconnectUseCase,
     required this.sendWsMessageUseCase,
   }) : super(WsNotConnected()) {
-    _offerStream = signalingService.offerStream;
-    _offerStream.listen(
+    _offerStreamSubcriptionController = signalingService.offerStream.listen(
       (offer) async {
         final failureOrSendMess = await sendWsMessageUseCase.call(SendMessageParams(message: offer));
         failureOrSendMess.fold((failure) {
@@ -49,7 +49,13 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
       },
     );
 
-    // todo: init iceCandidate streams
+    _iceCandidateSendStreamController = signalingService.iceCandidateSendStream.listen((iceCandidate) {
+      // todo: setup to send iceCandidate from local peer to remote peer via webrtc
+    });
+
+    _iceCandidateRecvStreamController = signalingService.iceCandidateRecvStream.listen((iceCandidate) {
+      // todo: setup to reiceive iceCandidate from remote peer to local peer
+    });
 
     on<WsConnectEvent>(
       (event, emit) async {
@@ -61,8 +67,7 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
             emit(WsNotConnected());
           },
           (Stream<ServerWsMessage> messageStream) {
-            _serverMessageStream = messageStream;
-            _serverMessageStream?.listen(
+            _serverMessageStreamSubcriptionController = messageStream.listen(
               (message) {
                 _handleServerWsMessage(message);
               },
@@ -188,10 +193,15 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
   @override
   Future<void> close() async {
     add(WsDisconnectEvent());
-    await _serverMessageStream?.drain();
-    _serverMessageStream = null;
-    await _offerStream.drain();
-    await signalingService.dispose();
+    print(_serverMessageStreamSubcriptionController);
+    if (_serverMessageStreamSubcriptionController != null) {
+      _serverMessageStreamSubcriptionController!.cancel();
+    }
+
+    _offerStreamSubcriptionController.cancel();
+    _iceCandidateRecvStreamController.cancel();
+    _iceCandidateSendStreamController.cancel();
+
     return super.close();
   }
 }

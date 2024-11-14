@@ -12,7 +12,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }) : super(NoAuthenticatedState()) {
     on<LoginEvent>(
       (event, emit) async {
-        print("Login event");
         final failureOrAccountInfo = await loginUseCase.call(
           LoginParams(event.accountID, event.password),
         );
