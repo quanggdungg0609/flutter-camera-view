@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_camera_view/features/camera_view/presentation/bloc/camera_select_cubit/camera_select.cubit.dart';
 import 'package:flutter_camera_view/features/camera_view/presentation/bloc/webrtc_bloc/webrtc.bloc.dart';
+import 'package:flutter_camera_view/features/camera_view/presentation/bloc/websocket_bloc/websocket.bloc.dart';
 import 'package:flutter_camera_view/features/camera_view/presentation/widgets/fullscreen_video_modal.widget.dart';
 import 'package:flutter_camera_view/features/camera_view/presentation/widgets/loading_stream.widget.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -18,8 +21,6 @@ class _LiveVideoCardWidgetState extends State<LiveVideoCardWidget> with TickerPr
   late final AnimationController _textBlinkController;
   late Animation<double> _textBlinkAnimation;
   final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
-  bool _inView = false;
-  MediaStream? _currentStream;
 
   Future<void> _initRenderer() async {
     await _remoteRenderer.initialize();
@@ -49,25 +50,13 @@ class _LiveVideoCardWidgetState extends State<LiveVideoCardWidget> with TickerPr
     super.dispose();
   }
 
-  void _toggleFullScreen() async {
-    await showDialog(
-      context: context,
-      useSafeArea: false,
-      builder: (dialogContext) {
-        return FullscreenVideoModal(videoRenderer: _remoteRenderer);
-      },
-    );
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext parentContext) {
     return BlocListener<WebRTCBloc, WebRTCState>(
-      listener: (BuildContext context, WebRTCState state) {
-        if (state is WebRTCConnected && state.stream != null) {
+      listener: (BuildContext listenerWebRTCcontext, WebRTCState listenerWebRTCstate) {
+        if (listenerWebRTCstate is WebRTCConnected && listenerWebRTCstate.stream != null) {
           setState(() {
-            _remoteRenderer.srcObject = state.stream!;
-            _currentStream = state.stream;
-            _inView = true;
+            _remoteRenderer.srcObject = listenerWebRTCstate.stream!;
           });
         }
       },
@@ -95,18 +84,38 @@ class _LiveVideoCardWidgetState extends State<LiveVideoCardWidget> with TickerPr
                       _remoteRenderer,
                       filterQuality: FilterQuality.high,
                       objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                      mirror: true,
                     ),
                   ),
-                  Positioned(
-                    bottom: 5,
-                    right: 5,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.fullscreen_exit,
-                        color: Colors.white,
-                      ),
-                      onPressed: _toggleFullScreen,
-                    ),
+                  BlocBuilder<CameraSelectCubit, CameraSelectState>(
+                    builder: (cameraSelectContext, cameraSelectState) {
+                      return Positioned(
+                        bottom: 5,
+                        right: 5,
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.fullscreen_exit,
+                            color: Colors.white,
+                          ),
+                          onPressed: () async {
+                            await showDialog(
+                              context: context,
+                              useSafeArea: false,
+                              builder: (dialogContext) {
+                                return BlocProvider.value(
+                                  value: BlocProvider.of<WebSocketBloc>(context),
+                                  child: FullscreenVideoModal(
+                                    videoRenderer: _remoteRenderer,
+                                    selectCameraUuid: cameraSelectState.selectedCameraUuid!,
+                                    currentUuid: cameraSelectState.uuid!,
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      );
+                    },
                   ),
                   Positioned(
                     bottom: 10,

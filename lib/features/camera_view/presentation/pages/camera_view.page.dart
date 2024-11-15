@@ -62,7 +62,7 @@ class _CameraViewPageState extends State<CameraViewPage> with WidgetsBindingObse
             create: (_) => sl<WebRTCBloc>(),
           ),
           BlocProvider<CameraSelectCubit>(
-            create: (_) => sl<CameraSelectCubit>(),
+            create: (_) => sl<CameraSelectCubit>()..setOwnUuid(),
           ),
         ],
         child: SafeArea(
@@ -92,7 +92,6 @@ class _CameraViewPageState extends State<CameraViewPage> with WidgetsBindingObse
                   }
 
                   if (state is WsConnected) {
-                    print(state);
                     if (!_isRequest) {
                       BlocProvider.of<WebSocketBloc>(wsListenerContext).add(
                         const WsSendMessageEvent(

@@ -53,9 +53,7 @@ dependencies:
   uuid: ^4.5.1
   rxdart: ^0.28.0
   gif: ^2.3.0
-  
-  
-
+  star_menu: ^4.0.1
 
 
 dev_dependencies:

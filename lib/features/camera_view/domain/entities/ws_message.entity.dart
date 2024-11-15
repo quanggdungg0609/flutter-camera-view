@@ -18,10 +18,9 @@ abstract class WsMessage extends Equatable {
   factory WsMessage.fromMap(Map<String, dynamic> map) {
     switch (map["event"]) {
       case "request-list-camera":
-        return RequestCameraListMessage(event: map["event"]);
+        return const RequestCameraListMessage();
       case "offer-sd":
         return OfferSDMessage(
-          event: map["event"],
           uuid: map["data"]["uuid"],
           sessionDescription: RTCSessionDescription(
             map["data"]["sdp"],
@@ -29,8 +28,14 @@ abstract class WsMessage extends Equatable {
           ),
           cameraTargetUuid: map["data"]["to"],
         );
+
+      case "take-image":
+        return TakeImageMessage(fromUuid: map["data"]["from"], toUuid: map["data"]["to"]);
+      case "start-record":
+        return StartRecordMessage(fromUuid: map["data"]["from"], toUuid: map["data"]["to"]);
+      case "stop-record":
+        return StopRecordMessage(fromUuid: map["data"]["from"], toUuid: map["data"]["to"]);
       case "ice-candidate":
-      //
       default:
         throw UnknowEventType();
     }
@@ -38,11 +43,11 @@ abstract class WsMessage extends Equatable {
 }
 
 class RequestCameraListMessage extends WsMessage {
-  const RequestCameraListMessage({required super.event});
+  const RequestCameraListMessage() : super(event: "request-list-cameras");
 
   @override
   String toMessage() {
-    return jsonEncode({"event": "request-list-cameras"});
+    return jsonEncode({"event": event});
   }
 }
 
@@ -51,11 +56,10 @@ class OfferSDMessage extends WsMessage {
   final RTCSessionDescription sessionDescription;
   final String cameraTargetUuid;
   const OfferSDMessage({
-    required super.event,
     required this.uuid,
     required this.sessionDescription,
     required this.cameraTargetUuid,
-  });
+  }) : super(event: "offer-sd");
 
   @override
   String toMessage() {
@@ -76,4 +80,84 @@ class OfferSDMessage extends WsMessage {
         sessionDescription,
         cameraTargetUuid,
       ];
+}
+
+class StartRecordMessage extends WsMessage {
+  final String fromUuid;
+  final String toUuid;
+
+  const StartRecordMessage({
+    required this.fromUuid,
+    required this.toUuid,
+  }) : super(event: "start-record");
+
+  @override
+  String toMessage() {
+    return jsonEncode(
+      {
+        "event": event,
+        "data": {
+          "from": fromUuid,
+          "to": toUuid,
+        }
+      },
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        event,
+        fromUuid,
+        toUuid,
+      ];
+}
+
+class StopRecordMessage extends WsMessage {
+  final String fromUuid;
+  final String toUuid;
+
+  const StopRecordMessage({required this.fromUuid, required this.toUuid}) : super(event: "stop-record");
+
+  @override
+  String toMessage() {
+    return jsonEncode(
+      {
+        "event": event,
+        "data": {
+          "from": fromUuid,
+          "to": toUuid,
+        }
+      },
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        event,
+        fromUuid,
+        toUuid,
+      ];
+}
+
+class TakeImageMessage extends WsMessage {
+  final String fromUuid;
+  final String toUuid;
+
+  const TakeImageMessage({required this.fromUuid, required this.toUuid}) : super(event: "take-image");
+
+  @override
+  String toMessage() {
+    return jsonEncode(
+      {
+        "event": event,
+        "data": {
+          "from": fromUuid,
+          "to": toUuid,
+        }
+      },
+    );
+  }
+
+  @override
+  List<Object?> get props => [event, toUuid, fromUuid];
 }

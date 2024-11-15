@@ -285,6 +285,8 @@ Future<void> _initalBlocs() async {
   );
 
   sl.registerFactory<CameraSelectCubit>(
-    () => CameraSelectCubit(),
+    () => CameraSelectCubit(
+      getOwnUuidUseCase: sl<GetOwnUuidUseCase>(),
+    ),
   );
 }

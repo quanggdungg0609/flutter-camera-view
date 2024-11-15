@@ -185,7 +185,6 @@ class WebRTCBloc extends Bloc<WebRTCEvent, WebRTCState> {
     final offer = await _peer!.getLocalDescription();
 
     final OfferSDMessage offerMessage = OfferSDMessage(
-      event: "offer-sd",
       uuid: uuid,
       sessionDescription: offer!,
       cameraTargetUuid: _currentCameraUUID,

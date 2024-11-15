@@ -41,10 +41,8 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
         final failureOrSendMess = await sendWsMessageUseCase.call(SendMessageParams(message: offer));
         failureOrSendMess.fold((failure) {
           // todo: send noti
-          print("failed");
         }, (unit) {
           // todo: success
-          print("success");
         });
       },
     );
@@ -193,7 +191,6 @@ class WebSocketBloc extends Bloc<WebSocketEvent, WebSocketState> {
   @override
   Future<void> close() async {
     add(WsDisconnectEvent());
-    print(_serverMessageStreamSubcriptionController);
     if (_serverMessageStreamSubcriptionController != null) {
       _serverMessageStreamSubcriptionController!.cancel();
     }

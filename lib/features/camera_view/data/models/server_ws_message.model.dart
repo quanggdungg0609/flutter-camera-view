@@ -4,24 +4,24 @@ import 'package:flutter_camera_view/features/camera_view/domain/entities/server_
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 class CameraConnectMessageModel extends CameraConnectMessage {
-  const CameraConnectMessageModel({required super.event, required super.cameraInfo});
+  const CameraConnectMessageModel({required super.cameraInfo});
 
   factory CameraConnectMessageModel.fromJson(Map<String, dynamic> json) {
     final cameraInfo = CameraInfoModel.fromJson(json["data"]);
-    return CameraConnectMessageModel(event: json["event"], cameraInfo: cameraInfo);
+    return CameraConnectMessageModel(cameraInfo: cameraInfo);
   }
 }
 
 class CameraDisconnectMessageModel extends CameraDisconnectMessage {
-  const CameraDisconnectMessageModel({required super.event, required super.cameraUuuid});
+  const CameraDisconnectMessageModel({required super.cameraUuuid});
 
   factory CameraDisconnectMessageModel.fromJson(Map<String, dynamic> json) {
-    return CameraDisconnectMessageModel(event: json["event"], cameraUuuid: json["data"]["uuid"]);
+    return CameraDisconnectMessageModel(cameraUuuid: json["data"]["uuid"]);
   }
 }
 
 class ResponseCameraListMessageModel extends ResponseCameraListMessage {
-  const ResponseCameraListMessageModel({required super.event, required super.cameras});
+  const ResponseCameraListMessageModel({required super.cameras});
 
   factory ResponseCameraListMessageModel.fromJson(Map<String, dynamic> json) {
     List<CameraInfo> cameras = [];
@@ -29,29 +29,28 @@ class ResponseCameraListMessageModel extends ResponseCameraListMessage {
       cameras.add(CameraInfoModel.fromJson(cameraJson));
     }
 
-    return ResponseCameraListMessageModel(event: json["event"], cameras: cameras);
+    return ResponseCameraListMessageModel(cameras: cameras);
   }
 }
 
 class PongMessageModel extends PongMessage {
-  const PongMessageModel({required super.event});
+  const PongMessageModel();
 }
 
 class AnswerSDMessageModel extends AnswerSDMessage {
-  const AnswerSDMessageModel({required super.event, required super.sessionDescription});
+  const AnswerSDMessageModel({required super.sessionDescription});
 
   factory AnswerSDMessageModel.fromJson(Map<String, dynamic> json) {
     RTCSessionDescription sd = RTCSessionDescription(
       json["data"]["sdp"],
       json["data"]["type"],
     );
-    return AnswerSDMessageModel(event: json["event"], sessionDescription: sd);
+    return AnswerSDMessageModel(sessionDescription: sd);
   }
 }
 
 class IceCandidateMessageModel extends IceCandidateMessage {
-  const IceCandidateMessageModel(
-      {required super.event, required super.from, required super.to, required super.iceCandidate});
+  const IceCandidateMessageModel({required super.from, required super.to, required super.iceCandidate});
 
   factory IceCandidateMessageModel.fromJson(Map<String, dynamic> json) {
     RTCIceCandidate iceCandidate = RTCIceCandidate(
@@ -60,7 +59,6 @@ class IceCandidateMessageModel extends IceCandidateMessage {
       json["data"]["sdpMLineIndex"],
     );
     return IceCandidateMessageModel(
-      event: json["event"],
       from: json["data"]["from"],
       to: json["data"]["to"],
       iceCandidate: iceCandidate,

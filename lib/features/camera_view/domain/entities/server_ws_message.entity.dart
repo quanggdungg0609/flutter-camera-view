@@ -15,9 +15,8 @@ abstract class ServerWsMessage extends Equatable {
 abstract class CameraConnectMessage extends ServerWsMessage {
   final CameraInfo cameraInfo;
   const CameraConnectMessage({
-    required super.event,
     required this.cameraInfo,
-  });
+  }) : super(event: 'camera-connect');
 
   @override
   List<Object?> get props => [event, cameraInfo];
@@ -26,7 +25,7 @@ abstract class CameraConnectMessage extends ServerWsMessage {
 abstract class CameraDisconnectMessage extends ServerWsMessage {
   final String cameraUuuid;
 
-  const CameraDisconnectMessage({required super.event, required this.cameraUuuid});
+  const CameraDisconnectMessage({required this.cameraUuuid}) : super(event: "camera-disconnect");
 
   @override
   List<Object?> get props => [event, cameraUuuid];
@@ -35,14 +34,14 @@ abstract class CameraDisconnectMessage extends ServerWsMessage {
 abstract class ResponseCameraListMessage extends ServerWsMessage {
   final List<CameraInfo> cameras;
 
-  const ResponseCameraListMessage({required super.event, required this.cameras});
+  const ResponseCameraListMessage({required this.cameras}) : super(event: "response-list-cameras");
 
   @override
   List<Object?> get props => [event, cameras];
 }
 
 abstract class PongMessage extends ServerWsMessage {
-  const PongMessage({required super.event});
+  const PongMessage() : super(event: "pong");
 
   @override
   List<Object?> get props => [event];
@@ -50,7 +49,7 @@ abstract class PongMessage extends ServerWsMessage {
 
 abstract class AnswerSDMessage extends ServerWsMessage {
   final RTCSessionDescription sessionDescription;
-  const AnswerSDMessage({required super.event, required this.sessionDescription});
+  const AnswerSDMessage({required this.sessionDescription}) : super(event: "answer-sd");
 
   @override
   List<Object?> get props => [event, sessionDescription];
@@ -60,7 +59,8 @@ abstract class IceCandidateMessage extends ServerWsMessage {
   final String from;
   final String to;
   final RTCIceCandidate iceCandidate;
-  const IceCandidateMessage({required super.event, required this.from, required this.to, required this.iceCandidate});
+  const IceCandidateMessage({required this.from, required this.to, required this.iceCandidate})
+      : super(event: "ice-candidate");
 
   @override
   List<Object?> get props => [event, from, to, iceCandidate];

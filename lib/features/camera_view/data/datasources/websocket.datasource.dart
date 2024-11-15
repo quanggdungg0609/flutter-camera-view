@@ -100,7 +100,7 @@ class WebSocketDataSourceImpl extends WebSocketDataSource {
       case "answer-sd":
         return AnswerSDMessageModel.fromJson(json);
       case "pong":
-        return const PongMessageModel(event: "pong");
+        return const PongMessageModel();
       case "ice-candidate":
         return IceCandidateMessageModel.fromJson(json);
       default:
