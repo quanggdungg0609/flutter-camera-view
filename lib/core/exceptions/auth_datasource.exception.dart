@@ -1,0 +1,1 @@
+class FailedToLoginException implements Exception {}
