@@ -13,6 +13,7 @@ import "package:flutter_camera_view/features/camera_view/domain/usescases/websoc
 import "package:flutter_camera_view/features/camera_view/presentation/bloc/camera_select_cubit/camera_select.cubit.dart";
 import "package:flutter_camera_view/features/camera_view/presentation/bloc/webrtc_bloc/webrtc.bloc.dart";
 import "package:flutter_camera_view/features/camera_view/presentation/bloc/websocket_bloc/websocket.bloc.dart";
+import "package:flutter_camera_view/features/gallery/data/datasources/gallerie.datasource.dart";
 import "package:flutter_camera_view/features/login/data/datasources/auth.datasource.dart";
 import "package:flutter_camera_view/features/login/data/datasources/local.datasource.dart";
 import "package:flutter_camera_view/features/login/data/models/tokens.model.dart";
@@ -99,6 +100,14 @@ Future<void> _initialDataSources() async {
     // Add an interceptor to handle automatic token refresh only for requests with Bearer Auth
     dio.interceptors.add(
       InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          // Lấy access token từ LocalDataSource và thêm vào header nếu có
+          AccessToken? token = await sl<LocalDataSource>().getAccessToken();
+          if (token != null) {
+            options.headers['Authorization'] = 'Bearer ${token.value}';
+          }
+          return handler.next(options);
+        },
         onError: (DioException e, ErrorInterceptorHandler handler) async {
           if (e.response?.statusCode == 401 && e.response?.data["code"] == "token_not_valid") {
             final authHeader = (e.requestOptions.headers["Authorization"] as String?);
@@ -169,6 +178,13 @@ Future<void> _initialDataSources() async {
   // websocket datasource
   sl.registerSingleton<WebSocketDataSource>(
     WebSocketDataSourceImpl(),
+  );
+
+  // gallerie datasource
+  sl.registerSingleton<GallerieDataSource>(
+    GallerieDataSourceImpl(
+      dio: sl<Dio>(),
+    ),
   );
 }
 

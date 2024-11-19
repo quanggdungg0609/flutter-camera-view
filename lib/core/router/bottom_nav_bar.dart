@@ -28,7 +28,16 @@ class _BottomNavBarState extends State<BottomNavBar> {
             fit: BoxFit.cover,
           ),
         ),
-        child: widget.child,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 500),
+          transitionBuilder: (child, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          child: widget.child,
+        ),
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -37,7 +46,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
             BoxShadow(
               spreadRadius: -10,
               blurRadius: 60,
-              color: Colors.black.withOpacity(.20),
+              color: Colors.black.withValues(alpha: .20),
               offset: const Offset(0, 15),
             )
           ],
@@ -83,13 +92,19 @@ class _BottomNavBarState extends State<BottomNavBar> {
   void _onTabChangeHandle(int index) {
     switch (index) {
       case 0:
-        context.go("/");
+        context.go(
+          "/",
+        );
         break;
       case 1:
-        context.go("/gallery");
+        context.go(
+          "/gallery",
+        );
         break;
       case 2:
-        context.go("/profile");
+        context.go(
+          "/profile",
+        );
         break;
     }
     setState(

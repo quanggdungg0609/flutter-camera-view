@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_camera_view/features/camera_view/presentation/bloc/camera_select_cubit/camera_select.cubit.dart';
+
 import 'package:flutter_camera_view/features/camera_view/presentation/bloc/websocket_bloc/websocket.bloc.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:go_router/go_router.dart';
@@ -122,7 +122,6 @@ class _FullscreenVideoModalState extends State<FullscreenVideoModal> with Ticker
                         : _buildMenuItem(Icons.stop, "Stop record"),
                   ],
                   onItemTapped: (index, controller) {
-                    // TODO: record and capture image actions
                     switch (index) {
                       case 0:
                         final takeImageMessage = {
