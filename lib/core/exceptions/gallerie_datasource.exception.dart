@@ -1,7 +1,19 @@
 class GetCamerasException implements Exception {}
 
-class GetMediaPageException implements Exception {}
+class GetMediaPageException implements Exception {
+  final String message;
+  const GetMediaPageException({required this.message});
+}
 
-class GetImagesInfosException implements Exception {}
+class GetMediaInfosException implements Exception {
+  final String message;
+  const GetMediaInfosException({required this.message});
+}
 
-class GetImageUrlsException implements Exception {}
+class GetMediaUrlsException implements Exception {
+  final String message;
+
+  const GetMediaUrlsException({required this.message});
+}
+
+class GetVideoThumbnaisException implements Exception {}

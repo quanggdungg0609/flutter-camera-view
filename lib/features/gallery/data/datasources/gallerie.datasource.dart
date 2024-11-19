@@ -1,11 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_camera_view/core/exceptions/gallerie_datasource.exception.dart';
 import 'package:flutter_camera_view/features/gallery/data/models/camera.model.dart';
-import 'package:flutter_camera_view/features/gallery/data/models/image_info.model.dart';
+import 'package:flutter_camera_view/features/gallery/data/models/media_info.model.dart';
 import 'package:flutter_camera_view/features/gallery/data/models/media_page.model.dart';
+import 'package:flutter_camera_view/features/gallery/data/models/media_url.model.dart';
+import 'package:flutter_camera_view/features/gallery/data/models/video_thumbnail.model.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/camera.entity.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/media_info.entity.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/media_page.entity.dart';
+import 'package:flutter_camera_view/features/gallery/domain/entities/media_url.entity.dart';
+import 'package:flutter_camera_view/features/gallery/domain/entities/video_thumbnail.entity.dart';
 
 abstract class GallerieDataSource {
   Future<List<Camera>> getCameras();
@@ -13,10 +17,11 @@ abstract class GallerieDataSource {
   Future<MediaPage> getMediaPage(String cameraUuid, {int page, int limit, bool isGetVideos});
 
   // get media  actions
-  Future<List<MediaInfo>> getMediaInfos(String uuidCamera, List<String> mediaNames, {bool isVideoInfos});
-  Future<List<String>> getMediaUrls(String uuidCamera, List<String> mediaNames, {bool isVideoUrls});
+  Future<List<MediaInfo>> getMediaInfos(String cameraUuid, List<String> mediaNames, {bool isVideoInfos});
+  Future<List<MediaUrl>> getMediaUrls(String cameraUuid, List<String> mediaNames, {bool isVideoUrls});
 
   // get video thumbnais
+  Future<List<VideoThumbnail>> getVideoThumbnails(String cameraUuid, List<String> videoNames);
 }
 
 class GallerieDataSourceImpl implements GallerieDataSource {
@@ -37,10 +42,10 @@ class GallerieDataSourceImpl implements GallerieDataSource {
   }
 
   @override
-  Future<List<MediaInfo>> getMediaInfos(String uuidCamera, List<String> mediaNames, {bool isVideoInfos = false}) async {
+  Future<List<MediaInfo>> getMediaInfos(String cameraUuid, List<String> mediaNames, {bool isVideoInfos = false}) async {
     try {
       final queryParams = [
-        'uuid=$uuidCamera',
+        'uuid=$cameraUuid',
         ...mediaNames.map((name) => isVideoInfos ? 'video_names=$name' : 'image_names=$name'),
       ].join('&');
 
@@ -50,24 +55,38 @@ class GallerieDataSourceImpl implements GallerieDataSource {
       final List<dynamic> data = response.data['image_infos'];
       return data.map((item) => MediaInfoModel.fromJson(item, isVideoInfos)).toList();
     } catch (_) {
-      throw GetImagesInfosException();
+      throw GetMediaInfosException(message: isVideoInfos ? "Failed to get video infos" : "failed to get image infos");
     }
   }
 
   @override
-  Future<List<String>> getMediaUrls(String uuidCamera, List<String> mediaNames, {bool isVideoUrls = false}) async {
+  Future<List<MediaUrl>> getMediaUrls(String cameraUuid, List<String> mediaNames, {bool isVideoUrls = false}) async {
     try {
       final queryParams = [
-        'uuid=$uuidCamera',
+        'uuid=$cameraUuid',
         ...mediaNames.map((name) => isVideoUrls ? 'video_names=$name' : 'image_names=$name'),
       ].join('&');
       final response = await dio.get(
         "/files/get-multiple-images?$queryParams",
       );
-      final List<String> result = List<String>.from(response.data['preview_urls']);
+      // final List<String> result = List<String>.from(response.data['preview_urls']);
+      if (mediaNames.length != (response.data["preview_urls"] as List).length) {
+        throw GetMediaUrlsException(
+          message: isVideoUrls ? "Failed to get video urls" : "Failed to get image urls",
+        );
+      }
+      final List<MediaUrl> result = List.generate(mediaNames.length, (index) {
+        return MediaUrlModel(
+          fileName: mediaNames[index],
+          fileUrl: (response.data["preview_urls"] as List)[index],
+          isVideo: isVideoUrls,
+        );
+      });
       return result;
     } catch (_) {
-      throw GetImageUrlsException();
+      throw GetMediaUrlsException(
+        message: isVideoUrls ? "Failed to get video urls" : "Failed to get image urls",
+      );
     }
   }
 
@@ -80,7 +99,34 @@ class GallerieDataSourceImpl implements GallerieDataSource {
       final MediaPage result = MediaPageModel.fromJson(response.data);
       return result;
     } catch (_) {
-      throw GetMediaPageException();
+      throw GetMediaPageException(message: isGetVideos ? "Failed to get videos" : "Failed to get images");
+    }
+  }
+
+  @override
+  Future<List<VideoThumbnail>> getVideoThumbnails(String cameraUuid, List<String> videoNames) async {
+    try {
+      final queryParams = [
+        'uuid=$cameraUuid',
+        ...videoNames.map((name) => 'video_names=$name'),
+      ].join('&');
+      final String url = "/files/get-list-thumbnails?$queryParams";
+
+      final response = await dio.get(url);
+
+      if (videoNames.length != (response.data["thumbnais"] as List).length) {
+        throw GetVideoThumbnaisException();
+      }
+      List<VideoThumbnail> result = List.generate(
+        videoNames.length,
+        (index) => VideoThumbnailModel(
+          fileName: videoNames[index],
+          thumbnailLink: (response.data["thumbnais"] as List)[index],
+        ),
+      );
+      return result;
+    } catch (_) {
+      throw GetVideoThumbnaisException();
     }
   }
 }
