@@ -14,6 +14,14 @@ import "package:flutter_camera_view/features/camera_view/presentation/bloc/camer
 import "package:flutter_camera_view/features/camera_view/presentation/bloc/webrtc_bloc/webrtc.bloc.dart";
 import "package:flutter_camera_view/features/camera_view/presentation/bloc/websocket_bloc/websocket.bloc.dart";
 import "package:flutter_camera_view/features/gallery/data/datasources/gallerie.datasource.dart";
+import "package:flutter_camera_view/features/gallery/data/repositories/gallerie_impl.repository.dart";
+import "package:flutter_camera_view/features/gallery/domain/repositories/gallerie.repository.dart";
+import "package:flutter_camera_view/features/gallery/domain/usecases/get_cameras.usecase.dart";
+import "package:flutter_camera_view/features/gallery/domain/usecases/get_media_infos.usecase.dart";
+import "package:flutter_camera_view/features/gallery/domain/usecases/get_media_page.usecase.dart";
+import "package:flutter_camera_view/features/gallery/domain/usecases/get_media_urls.usecase.dart";
+import "package:flutter_camera_view/features/gallery/domain/usecases/get_video_thumbnails.usecase.dart";
+import "package:flutter_camera_view/features/gallery/presentation/blocs/camera_select_cubit/resource_select.cubit.dart";
 import "package:flutter_camera_view/features/login/data/datasources/auth.datasource.dart";
 import "package:flutter_camera_view/features/login/data/datasources/local.datasource.dart";
 import "package:flutter_camera_view/features/login/data/models/tokens.model.dart";
@@ -215,6 +223,12 @@ Future<void> _initialRepositories() async {
       localDataSource: sl<LocalDataSource>(),
     ),
   );
+
+  sl.registerSingleton<GallerieRepository>(
+    GallerieImplRepository(
+      gallerieDataSource: sl<GallerieDataSource>(),
+    ),
+  );
 }
 
 // * Usecases Initial
@@ -266,6 +280,43 @@ Future<void> _initalUseCases() async {
       repository: sl<LocalResourceRepository>(),
     ),
   );
+
+  // * Gallerie use cases
+  sl.registerLazySingleton<GetCamerasUseCase>(
+    () => GetCamerasUseCase(
+      repository: sl<GallerieRepository>(),
+    ),
+  );
+
+  sl.registerLazySingleton<GetMediaPageUseCase>(
+    () => GetMediaPageUseCase(
+      repository: sl<GallerieRepository>(),
+    ),
+  );
+
+  sl.registerLazySingleton<GetMediaInfosUseCase>(
+    () => GetMediaInfosUseCase(
+      repository: sl<GallerieRepository>(),
+    ),
+  );
+
+  sl.registerLazySingleton<GetMediaInfosUseCase>(
+    () => GetMediaInfosUseCase(
+      repository: sl<GallerieRepository>(),
+    ),
+  );
+
+  sl.registerLazySingleton<GetMediaUrlsUseCase>(
+    () => GetMediaUrlsUseCase(
+      repository: sl<GallerieRepository>(),
+    ),
+  );
+
+  sl.registerLazySingleton<GetVideoThumbnailsUseCase>(
+    () => GetVideoThumbnailsUseCase(
+      repository: sl<GallerieRepository>(),
+    ),
+  );
 }
 
 // * BLOCs initial
@@ -303,6 +354,14 @@ Future<void> _initalBlocs() async {
   sl.registerFactory<CameraSelectCubit>(
     () => CameraSelectCubit(
       getOwnUuidUseCase: sl<GetOwnUuidUseCase>(),
+    ),
+  );
+
+  // * Gallerie section
+
+  sl.registerFactory<ResourceSelectCubit>(
+    () => ResourceSelectCubit(
+      getCamerasUseCase: sl<GetCamerasUseCase>(),
     ),
   );
 }

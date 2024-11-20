@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_camera_view/features/gallery/data/datasources/gallerie.datasource.dart';
+import 'package:flutter_camera_view/features/gallery/presentation/blocs/camera_select_cubit/resource_select.cubit.dart';
+import 'package:flutter_camera_view/features/gallery/presentation/widgets/resource_select.widget.dart';
 import 'package:flutter_camera_view/injection_container.dart';
 
 class GalleryPage extends StatelessWidget {
@@ -7,19 +10,16 @@ class GalleryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    sl<GallerieDataSource>().getMediaPage("48f797c7-3e0d-427c-b23c-8d6400841d05").then(
-      (page) async {
-        print(page.fileNames);
-        final list =
-            await sl<GallerieDataSource>().getMediaInfos("48f797c7-3e0d-427c-b23c-8d6400841d05", page.fileNames);
-        print(list);
-      },
-    );
-
-    return const Scaffold(
+    return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
-        child: Stack(
+          child: MultiBlocProvider(
+        providers: [
+          BlocProvider<ResourceSelectCubit>(
+            create: (context) => sl<ResourceSelectCubit>(),
+          ),
+        ],
+        child: const Stack(
           children: [
             Padding(
               padding: EdgeInsets.only(left: 20, top: 10),
@@ -35,9 +35,10 @@ class GalleryPage extends StatelessWidget {
                 ),
               ),
             ),
+            ResourceSelectWidget(),
           ],
         ),
-      ),
+      )),
     );
   }
 }
