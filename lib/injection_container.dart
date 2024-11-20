@@ -13,6 +13,15 @@ import "package:flutter_camera_view/features/camera_view/domain/usescases/websoc
 import "package:flutter_camera_view/features/camera_view/presentation/bloc/camera_select_cubit/camera_select.cubit.dart";
 import "package:flutter_camera_view/features/camera_view/presentation/bloc/webrtc_bloc/webrtc.bloc.dart";
 import "package:flutter_camera_view/features/camera_view/presentation/bloc/websocket_bloc/websocket.bloc.dart";
+import "package:flutter_camera_view/features/gallery/data/datasources/gallerie.datasource.dart";
+import "package:flutter_camera_view/features/gallery/data/repositories/gallerie_impl.repository.dart";
+import "package:flutter_camera_view/features/gallery/domain/repositories/gallerie.repository.dart";
+import "package:flutter_camera_view/features/gallery/domain/usecases/get_cameras.usecase.dart";
+import "package:flutter_camera_view/features/gallery/domain/usecases/get_media_infos.usecase.dart";
+import "package:flutter_camera_view/features/gallery/domain/usecases/get_media_page.usecase.dart";
+import "package:flutter_camera_view/features/gallery/domain/usecases/get_media_urls.usecase.dart";
+import "package:flutter_camera_view/features/gallery/domain/usecases/get_video_thumbnails.usecase.dart";
+import "package:flutter_camera_view/features/gallery/presentation/blocs/camera_select_cubit/resource_select.cubit.dart";
 import "package:flutter_camera_view/features/login/data/datasources/auth.datasource.dart";
 import "package:flutter_camera_view/features/login/data/datasources/local.datasource.dart";
 import "package:flutter_camera_view/features/login/data/models/tokens.model.dart";
@@ -99,6 +108,14 @@ Future<void> _initialDataSources() async {
     // Add an interceptor to handle automatic token refresh only for requests with Bearer Auth
     dio.interceptors.add(
       InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          // Lấy access token từ LocalDataSource và thêm vào header nếu có
+          AccessToken? token = await sl<LocalDataSource>().getAccessToken();
+          if (token != null) {
+            options.headers['Authorization'] = 'Bearer ${token.value}';
+          }
+          return handler.next(options);
+        },
         onError: (DioException e, ErrorInterceptorHandler handler) async {
           if (e.response?.statusCode == 401 && e.response?.data["code"] == "token_not_valid") {
             final authHeader = (e.requestOptions.headers["Authorization"] as String?);
@@ -170,6 +187,13 @@ Future<void> _initialDataSources() async {
   sl.registerSingleton<WebSocketDataSource>(
     WebSocketDataSourceImpl(),
   );
+
+  // gallerie datasource
+  sl.registerSingleton<GallerieDataSource>(
+    GallerieDataSourceImpl(
+      dio: sl<Dio>(),
+    ),
+  );
 }
 
 // * Repositories initial
@@ -197,6 +221,12 @@ Future<void> _initialRepositories() async {
   sl.registerSingleton<LocalResourceRepository>(
     LocalResourceImplRepository(
       localDataSource: sl<LocalDataSource>(),
+    ),
+  );
+
+  sl.registerSingleton<GallerieRepository>(
+    GallerieImplRepository(
+      gallerieDataSource: sl<GallerieDataSource>(),
     ),
   );
 }
@@ -250,6 +280,43 @@ Future<void> _initalUseCases() async {
       repository: sl<LocalResourceRepository>(),
     ),
   );
+
+  // * Gallerie use cases
+  sl.registerLazySingleton<GetCamerasUseCase>(
+    () => GetCamerasUseCase(
+      repository: sl<GallerieRepository>(),
+    ),
+  );
+
+  sl.registerLazySingleton<GetMediaPageUseCase>(
+    () => GetMediaPageUseCase(
+      repository: sl<GallerieRepository>(),
+    ),
+  );
+
+  sl.registerLazySingleton<GetMediaInfosUseCase>(
+    () => GetMediaInfosUseCase(
+      repository: sl<GallerieRepository>(),
+    ),
+  );
+
+  sl.registerLazySingleton<GetMediaInfosUseCase>(
+    () => GetMediaInfosUseCase(
+      repository: sl<GallerieRepository>(),
+    ),
+  );
+
+  sl.registerLazySingleton<GetMediaUrlsUseCase>(
+    () => GetMediaUrlsUseCase(
+      repository: sl<GallerieRepository>(),
+    ),
+  );
+
+  sl.registerLazySingleton<GetVideoThumbnailsUseCase>(
+    () => GetVideoThumbnailsUseCase(
+      repository: sl<GallerieRepository>(),
+    ),
+  );
 }
 
 // * BLOCs initial
@@ -287,6 +354,14 @@ Future<void> _initalBlocs() async {
   sl.registerFactory<CameraSelectCubit>(
     () => CameraSelectCubit(
       getOwnUuidUseCase: sl<GetOwnUuidUseCase>(),
+    ),
+  );
+
+  // * Gallerie section
+
+  sl.registerFactory<ResourceSelectCubit>(
+    () => ResourceSelectCubit(
+      getCamerasUseCase: sl<GetCamerasUseCase>(),
     ),
   );
 }

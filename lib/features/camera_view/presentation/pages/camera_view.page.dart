@@ -27,11 +27,12 @@ class _CameraViewPageState extends State<CameraViewPage> with WidgetsBindingObse
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+
     sl<WebRTCBloc>().add(WebRTCDisconnectingEvent());
     sl<WebSocketBloc>().add(WsDisconnectEvent());
     sl<WebSocketBloc>().close();
     sl<WebRTCBloc>().close();
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 

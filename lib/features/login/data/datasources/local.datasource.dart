@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_camera_view/core/constants/constants.dart';
 import 'package:flutter_camera_view/core/exceptions/local_datasource.exception.dart';
 import 'package:flutter_camera_view/features/login/data/models/account_info.model.dart';

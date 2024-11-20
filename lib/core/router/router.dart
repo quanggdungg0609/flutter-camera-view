@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_camera_view/core/router/bottom_nav_bar.dart';
 import 'package:flutter_camera_view/features/camera_view/presentation/pages/camera_view.page.dart';
-import 'package:flutter_camera_view/features/camera_view/presentation/widgets/fullscreen_video_modal.widget.dart';
 import 'package:flutter_camera_view/features/gallery/presentation/pages/gallery.page.dart';
 import 'package:flutter_camera_view/features/login/presentation/pages/login.page.dart';
 import 'package:flutter_camera_view/features/profile/presentation/pages/profile.page.dart';
@@ -24,15 +23,21 @@ class AppRouter {
         routes: [
           GoRoute(
             path: "/",
-            builder: (context, state) => const CameraViewPage(),
+            builder: (context, state) => const CameraViewPage(
+              key: PageStorageKey("CameraView"),
+            ),
           ),
           GoRoute(
             path: "/gallery",
-            builder: (context, state) => const GalleryPage(),
+            builder: (context, state) => const GalleryPage(
+              key: PageStorageKey("Gallerie"),
+            ),
           ),
           GoRoute(
             path: "/profile",
-            builder: (context, state) => const ProfilePage(),
+            builder: (context, state) => const ProfilePage(
+              key: PageStorageKey("Profile"),
+            ),
           )
         ],
       )
