@@ -19,7 +19,7 @@ class StableState extends ResourceSelectState {
   }
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [currentCamera, listCameras];
 }
 
 class LoadingDataState extends ResourceSelectState {}

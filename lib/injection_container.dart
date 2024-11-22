@@ -300,12 +300,6 @@ Future<void> _initalUseCases() async {
     ),
   );
 
-  sl.registerLazySingleton<GetMediaInfosUseCase>(
-    () => GetMediaInfosUseCase(
-      repository: sl<GallerieRepository>(),
-    ),
-  );
-
   sl.registerLazySingleton<GetMediaUrlsUseCase>(
     () => GetMediaUrlsUseCase(
       repository: sl<GallerieRepository>(),

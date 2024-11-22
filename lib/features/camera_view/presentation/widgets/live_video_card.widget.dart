@@ -144,6 +144,7 @@ class _LiveVideoCardWidgetState extends State<LiveVideoCardWidget> with TickerPr
             return const LoadingStreamWidget();
           }
           return Container(
+            //TODO: sections when connection closed;
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),

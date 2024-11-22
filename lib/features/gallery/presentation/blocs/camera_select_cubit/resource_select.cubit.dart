@@ -11,7 +11,7 @@ class ResourceSelectCubit extends Cubit<ResourceSelectState> {
   ResourceSelectCubit({required this.getCamerasUseCase})
       : super(
           StableState(
-            listCameras: [],
+            listCameras: const [],
           ),
         );
 
