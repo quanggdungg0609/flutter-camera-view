@@ -18,10 +18,12 @@ import "package:flutter_camera_view/features/gallery/data/repositories/gallerie_
 import "package:flutter_camera_view/features/gallery/domain/repositories/gallerie.repository.dart";
 import "package:flutter_camera_view/features/gallery/domain/usecases/get_cameras.usecase.dart";
 import "package:flutter_camera_view/features/gallery/domain/usecases/get_media_infos.usecase.dart";
+import "package:flutter_camera_view/features/gallery/domain/usecases/get_media_items.usecase.dart";
 import "package:flutter_camera_view/features/gallery/domain/usecases/get_media_page.usecase.dart";
 import "package:flutter_camera_view/features/gallery/domain/usecases/get_media_urls.usecase.dart";
 import "package:flutter_camera_view/features/gallery/domain/usecases/get_video_thumbnails.usecase.dart";
 import "package:flutter_camera_view/features/gallery/presentation/blocs/camera_select_cubit/resource_select.cubit.dart";
+import "package:flutter_camera_view/features/gallery/presentation/blocs/gallerie_bloc/gallerie.bloc.dart";
 import "package:flutter_camera_view/features/login/data/datasources/auth.datasource.dart";
 import "package:flutter_camera_view/features/login/data/datasources/local.datasource.dart";
 import "package:flutter_camera_view/features/login/data/models/tokens.model.dart";
@@ -233,6 +235,7 @@ Future<void> _initialRepositories() async {
 
 // * Usecases Initial
 Future<void> _initalUseCases() async {
+  // Todo: maybe remove unused uscases
   sl.registerLazySingleton<LoginUseCase>(
     () => LoginUseCase(
       repository: sl<AuthRepository>(),
@@ -294,27 +297,16 @@ Future<void> _initalUseCases() async {
     ),
   );
 
-  sl.registerLazySingleton<GetMediaInfosUseCase>(
-    () => GetMediaInfosUseCase(
-      repository: sl<GallerieRepository>(),
-    ),
-  );
-
-  sl.registerLazySingleton<GetMediaUrlsUseCase>(
-    () => GetMediaUrlsUseCase(
-      repository: sl<GallerieRepository>(),
-    ),
-  );
-
-  sl.registerLazySingleton<GetVideoThumbnailsUseCase>(
-    () => GetVideoThumbnailsUseCase(
-      repository: sl<GallerieRepository>(),
+  sl.registerLazySingleton<GetMediaItemsUseCase>(
+    () => GetMediaItemsUseCase(
+      gallerieRepository: sl<GallerieRepository>(),
     ),
   );
 }
 
 // * BLOCs initial
 Future<void> _initalBlocs() async {
+  // * login feature section
   sl.registerFactory<AuthBloc>(
     () => AuthBloc(
       loginUseCase: sl<LoginUseCase>(),
@@ -329,6 +321,7 @@ Future<void> _initalBlocs() async {
     ),
   );
 
+  // * Camera view feature section
   sl.registerFactory<WebSocketBloc>(
     () => WebSocketBloc(
       connectUseCase: sl<WebSocketConnectUseCase>(),
@@ -351,11 +344,17 @@ Future<void> _initalBlocs() async {
     ),
   );
 
-  // * Gallerie section
-
+  // * Gallerie feature section
   sl.registerFactory<ResourceSelectCubit>(
     () => ResourceSelectCubit(
       getCamerasUseCase: sl<GetCamerasUseCase>(),
+    ),
+  );
+
+  sl.registerFactory<GallerieBloc>(
+    () => GallerieBloc(
+      getMediaPageUseCase: sl<GetMediaPageUseCase>(),
+      getMediaItemsUseCase: sl<GetMediaItemsUseCase>(),
     ),
   );
 }

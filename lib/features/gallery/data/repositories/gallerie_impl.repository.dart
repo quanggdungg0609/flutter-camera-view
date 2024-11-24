@@ -4,6 +4,7 @@ import 'package:flutter_camera_view/core/failures/gallerie.failure.dart';
 import 'package:flutter_camera_view/features/gallery/data/datasources/gallerie.datasource.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/camera.entity.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/media_info.entity.dart';
+import 'package:flutter_camera_view/features/gallery/domain/entities/media_item.entity.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/media_page.entity.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/media_url.entity.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/video_thumbnail.entity.dart';
@@ -76,6 +77,18 @@ class GallerieImplRepository implements GallerieRepository {
       return Right(videoThumbnails);
     } catch (e) {
       return Left(GetVideoThumbnailsFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<MediaItem>>> getMediaItems(String cameraUuid, MediaPage mediaPage) async {
+    try {
+      final List<MediaItem> mediaItems = await gallerieDataSource.getMediaItems(cameraUuid, mediaPage);
+      return Right(mediaItems);
+    } catch (e) {
+      return Left(
+        GetMediaItemsFailure(isVideo: mediaPage.isVideos),
+      );
     }
   }
 }

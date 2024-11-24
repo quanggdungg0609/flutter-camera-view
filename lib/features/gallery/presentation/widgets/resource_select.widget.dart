@@ -1,4 +1,5 @@
-import 'package:animated_custom_dropdown/custom_dropdown.dart';
+import 'package:cool_dropdown/cool_dropdown.dart';
+import 'package:cool_dropdown/models/cool_dropdown_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/camera.entity.dart';
@@ -13,36 +14,38 @@ class ResourceSelectWidget extends StatefulWidget {
 }
 
 class _ResourceSelectWidgetState extends State<ResourceSelectWidget> {
+  final _dropdownController = DropdownController<Camera>();
+  @override
+  void dispose() {
+    _dropdownController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ResourceSelectCubit, ResourceSelectState>(
       builder: (resourceSelectContext, state) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: CustomDropdown<Camera>.search(
-            hintText: "Veuillez sélectionner une resource...",
-            excludeSelected: false,
-            items: (state as StableState).listCameras,
-            decoration: CustomDropdownDecoration(
-              prefixIcon:
-                  (state is LoadingDataState) ? const CircularProgressIndicator() : const Icon(Icons.camera_alt),
-            ),
-            listItemBuilder: (context, item, isSelected, onItemSelect) {
-              return Text(item.cameraName);
-            },
-            headerBuilder: (context, selectedItem, enabled) {
-              return Text(
-                selectedItem.cameraName,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
-              );
-            },
-            onChanged: (camera) {
-              BlocProvider.of<ResourceSelectCubit>(resourceSelectContext).setCurrentCameras(camera!);
-            },
+        return CoolDropdown<Camera>(
+          dropdownList: (state as StableState)
+              .listCameras
+              .map(
+                (item) => CoolDropdownItem<Camera>(label: item.cameraName, value: item),
+              )
+              .toList(),
+          controller: _dropdownController,
+          resultOptions: const ResultOptions(
+            placeholder: "Veuillez choisir une resources...",
           ),
+          dropdownItemOptions: const DropdownItemOptions(
+            selectedTextStyle: TextStyle(
+              color: Colors.blue,
+            ),
+          ),
+          onChange: (Camera camera) {
+            BlocProvider.of<ResourceSelectCubit>(resourceSelectContext).setCurrentCameras(camera);
+            // _dropdownController.close();
+          },
+          dropdownTriangleOptions: const DropdownTriangleOptions(align: DropdownTriangleAlign.right),
         );
       },
     );

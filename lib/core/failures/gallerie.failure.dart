@@ -30,3 +30,12 @@ class GetMediaUrlsFailure extends Failure {
 }
 
 class GetVideoThumbnailsFailure extends Failure {}
+
+class GetMediaItemsFailure extends Failure {
+  final bool isVideo;
+
+  GetMediaItemsFailure({required this.isVideo});
+
+  @override
+  List<Object?> get props => [isVideo];
+}

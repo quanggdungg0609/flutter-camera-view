@@ -1,7 +1,6 @@
-import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:equatable/equatable.dart';
 
-abstract class Camera extends Equatable with CustomDropdownListFilter {
+abstract class Camera extends Equatable {
   final String cameraName;
   final String cameraUuid;
 
@@ -9,9 +8,4 @@ abstract class Camera extends Equatable with CustomDropdownListFilter {
 
   @override
   List<Object?> get props => [cameraName, cameraUuid];
-
-  @override
-  bool filter(String query) {
-    return cameraName.toLowerCase().contains(query.toLowerCase());
-  }
 }

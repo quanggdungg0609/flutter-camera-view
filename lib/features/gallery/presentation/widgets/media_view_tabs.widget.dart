@@ -16,34 +16,39 @@ class _MediaViewTabsWidgetState extends State<MediaViewTabsWidget> {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.only(
-          left: 20,
-          right: 20,
-          bottom: 20,
-        ),
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.grey,
-                offset: Offset(1, 1),
-                blurRadius: 10,
-              )
-            ],
-          ),
-          child: BlocBuilder<ResourceSelectCubit, ResourceSelectState>(
-            builder: (resourceSelectContext, state) {
-              if (state is StableState && state.currentCamera == null) {
-                return const NoResourceSelectedWidget();
+      child: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child: BlocBuilder<ResourceSelectCubit, ResourceSelectState>(
+          builder: (resourceSelectContext, state) {
+            if (state is StableState) {
+              if (state.currentCamera == null) {
+                return Center(
+                  child: Container(
+                      width: 300,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.grey,
+                            offset: Offset(1, 1),
+                            blurRadius: 10,
+                          )
+                        ],
+                      ),
+                      child: const NoResourceSelectedWidget()),
+                );
+              } else {
+                return ResourcesTabsWidget(
+                  key: UniqueKey(),
+                  currentCamera: state.currentCamera!,
+                );
               }
-              return const ResourcesTabsWidget();
-            },
-          ),
+            }
+            return Container();
+          },
         ),
       ),
     );

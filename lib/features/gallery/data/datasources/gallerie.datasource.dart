@@ -2,11 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:flutter_camera_view/core/exceptions/gallerie_datasource.exception.dart';
 import 'package:flutter_camera_view/features/gallery/data/models/camera.model.dart';
 import 'package:flutter_camera_view/features/gallery/data/models/media_info.model.dart';
+import 'package:flutter_camera_view/features/gallery/data/models/media_item.model.dart';
 import 'package:flutter_camera_view/features/gallery/data/models/media_page.model.dart';
 import 'package:flutter_camera_view/features/gallery/data/models/media_url.model.dart';
 import 'package:flutter_camera_view/features/gallery/data/models/video_thumbnail.model.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/camera.entity.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/media_info.entity.dart';
+import 'package:flutter_camera_view/features/gallery/domain/entities/media_item.entity.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/media_page.entity.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/media_url.entity.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/video_thumbnail.entity.dart';
@@ -22,6 +24,8 @@ abstract class GallerieDataSource {
 
   // get video thumbnais
   Future<List<VideoThumbnail>> getVideoThumbnails(String cameraUuid, List<String> videoNames);
+
+  Future<List<MediaItem>> getMediaItems(String cameraUuid, MediaPage mediaPage);
 }
 
 class GallerieDataSourceImpl implements GallerieDataSource {
@@ -83,7 +87,8 @@ class GallerieDataSourceImpl implements GallerieDataSource {
         );
       });
       return result;
-    } catch (_) {
+    } catch (e) {
+      print(e);
       throw GetMediaUrlsException(
         message: isVideoUrls ? "Failed to get video urls" : "Failed to get image urls",
       );
@@ -96,7 +101,7 @@ class GallerieDataSourceImpl implements GallerieDataSource {
       final String fileType = isGetVideos ? "videos" : "images";
       final String url = "/files/get-$fileType?uuid=$cameraUuid&page=$page&limit=$limit";
       final response = await dio.get(url);
-      final MediaPage result = MediaPageModel.fromJson(response.data);
+      final MediaPage result = MediaPageModel.fromJson(response.data, isGetVideos, cameraUuid);
       return result;
     } catch (_) {
       throw GetMediaPageException(message: isGetVideos ? "Failed to get videos" : "Failed to get images");
@@ -127,6 +132,57 @@ class GallerieDataSourceImpl implements GallerieDataSource {
       return result;
     } catch (_) {
       throw GetVideoThumbnaisException();
+    }
+  }
+
+  @override
+  Future<List<MediaItemModel>> getMediaItems(String cameraUuid, MediaPage mediaPage) async {
+    try {
+      // extract file names
+      final List<String> fileNames = mediaPage.fileNames;
+      final mediaInfosFuture = getMediaInfos(cameraUuid, fileNames, isVideoInfos: mediaPage.isVideos);
+      final mediaUrlsFuture = getMediaUrls(cameraUuid, fileNames, isVideoUrls: mediaPage.isVideos);
+
+      final videoThumbnailsFuture =
+          mediaPage.isVideos ? getVideoThumbnails(cameraUuid, fileNames) : Future.value(<VideoThumbnail>[]);
+
+      final resultFuture = await Future.wait([
+        mediaInfosFuture,
+        mediaUrlsFuture,
+        videoThumbnailsFuture,
+      ]);
+
+      final mediaInfos = resultFuture[0] as List<MediaInfo>;
+      final mediaUrls = resultFuture[1] as List<MediaUrl>;
+      final videoThumbnails = resultFuture[2] as List<VideoThumbnail>;
+
+      final mediaItems = <MediaItemModel>[];
+
+      for (int i = 0; i < fileNames.length; i++) {
+        final mediaInfo = mediaInfos.firstWhere(
+          (info) => info.name == fileNames[i],
+        );
+
+        final mediaUrl = mediaUrls.firstWhere(
+          (url) => url.fileName == fileNames[i],
+        );
+
+        final videoThumbnail = videoThumbnails.isNotEmpty
+            ? videoThumbnails.firstWhere((thumbnail) => thumbnail.fileName == fileNames[i])
+            : null;
+        mediaItems.add(
+          MediaItemModel(
+            mediaName: mediaInfo.name,
+            mediaUrl: mediaUrl.fileUrl,
+            size: mediaInfo.size,
+            lastModified: mediaInfo.lastModified,
+            videoThumbnail: videoThumbnail?.thumbnailLink,
+          ),
+        );
+      }
+      return mediaItems;
+    } catch (e) {
+      rethrow;
     }
   }
 }
