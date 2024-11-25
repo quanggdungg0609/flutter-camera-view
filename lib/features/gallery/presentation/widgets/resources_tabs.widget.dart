@@ -27,30 +27,51 @@ class _ResourcesTabsWidgetState extends State<ResourcesTabsWidget> with TickerPr
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: TabBar(
+    return SizedBox.expand(
+      child: Column(children: [
+        TabBar(
+          splashFactory: NoSplash.splashFactory,
           controller: _tabController,
+          dividerColor: Colors.transparent,
+          labelColor: Colors.white,
+          indicatorColor: Colors.white,
           tabs: const [
             Tab(
-              icon: Icon(Icons.image),
-              text: "Images",
+              icon: Icon(
+                Icons.image,
+                shadows: [
+                  BoxShadow(
+                    color: Colors.grey,
+                    offset: Offset(1, 1),
+                    blurRadius: 10,
+                  )
+                ],
+              ),
             ),
             Tab(
-              icon: Icon(Icons.video_collection),
+              icon: Icon(
+                Icons.video_collection,
+                shadows: [
+                  BoxShadow(
+                    color: Colors.grey,
+                    offset: Offset(1, 1),
+                    blurRadius: 10,
+                  )
+                ],
+              ),
             )
           ],
         ),
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            ImagesGallerieWidget(cameraUuid: widget.currentCamera.cameraUuid),
-            const Text("Videos"),
-          ],
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              ImagesGallerieWidget(cameraUuid: widget.currentCamera.cameraUuid),
+              const Text("Videos"),
+            ],
+          ),
         ),
-      ),
+      ]),
     );
   }
 }

@@ -59,6 +59,7 @@ dependencies:
   infinite_scroll_pagination: ^4.1.0
   dropdown_button2: ^2.3.9
   cool_dropdown: ^2.1.1
+  photo_view: ^0.15.0
 
 
 dev_dependencies:

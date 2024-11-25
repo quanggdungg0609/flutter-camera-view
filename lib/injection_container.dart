@@ -119,7 +119,9 @@ Future<void> _initialDataSources() async {
           return handler.next(options);
         },
         onError: (DioException e, ErrorInterceptorHandler handler) async {
-          if (e.response?.statusCode == 401 && e.response?.data["code"] == "token_not_valid") {
+          if (e.response?.statusCode == 401 && e.response?.data["code"] == "token_not_valid" ||
+              e.response?.statusCode == 401 &&
+                  e.response?.data["detail"] == "Given token not valid for any token type") {
             final authHeader = (e.requestOptions.headers["Authorization"] as String?);
 
             if (authHeader?.startsWith("Bearer") == true) {

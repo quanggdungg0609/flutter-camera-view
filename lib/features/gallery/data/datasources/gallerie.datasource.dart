@@ -25,7 +25,7 @@ abstract class GallerieDataSource {
   // get video thumbnais
   Future<List<VideoThumbnail>> getVideoThumbnails(String cameraUuid, List<String> videoNames);
 
-  Future<List<MediaItem>> getMediaItems(String cameraUuid, MediaPage mediaPage);
+  Future<List<MediaItem>> getMediaItems(MediaPage mediaPage);
 }
 
 class GallerieDataSourceImpl implements GallerieDataSource {
@@ -136,15 +136,15 @@ class GallerieDataSourceImpl implements GallerieDataSource {
   }
 
   @override
-  Future<List<MediaItemModel>> getMediaItems(String cameraUuid, MediaPage mediaPage) async {
+  Future<List<MediaItemModel>> getMediaItems(MediaPage mediaPage) async {
     try {
       // extract file names
       final List<String> fileNames = mediaPage.fileNames;
-      final mediaInfosFuture = getMediaInfos(cameraUuid, fileNames, isVideoInfos: mediaPage.isVideos);
-      final mediaUrlsFuture = getMediaUrls(cameraUuid, fileNames, isVideoUrls: mediaPage.isVideos);
+      final mediaInfosFuture = getMediaInfos(mediaPage.cameraUuid, fileNames, isVideoInfos: mediaPage.isVideos);
+      final mediaUrlsFuture = getMediaUrls(mediaPage.cameraUuid, fileNames, isVideoUrls: mediaPage.isVideos);
 
       final videoThumbnailsFuture =
-          mediaPage.isVideos ? getVideoThumbnails(cameraUuid, fileNames) : Future.value(<VideoThumbnail>[]);
+          mediaPage.isVideos ? getVideoThumbnails(mediaPage.cameraUuid, fileNames) : Future.value(<VideoThumbnail>[]);
 
       final resultFuture = await Future.wait([
         mediaInfosFuture,

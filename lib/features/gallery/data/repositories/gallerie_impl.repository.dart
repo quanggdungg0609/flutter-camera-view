@@ -81,9 +81,9 @@ class GallerieImplRepository implements GallerieRepository {
   }
 
   @override
-  Future<Either<Failure, List<MediaItem>>> getMediaItems(String cameraUuid, MediaPage mediaPage) async {
+  Future<Either<Failure, List<MediaItem>>> getMediaItems(MediaPage mediaPage) async {
     try {
-      final List<MediaItem> mediaItems = await gallerieDataSource.getMediaItems(cameraUuid, mediaPage);
+      final List<MediaItem> mediaItems = await gallerieDataSource.getMediaItems(mediaPage);
       return Right(mediaItems);
     } catch (e) {
       return Left(

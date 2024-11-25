@@ -37,8 +37,13 @@ class GallerieBloc extends Bloc<GallerieEvent, GallerieState> {
             mediaPageResult = mediaPage;
           },
         );
-        final failureOrMediaItems = await getMediaItemsUseCase
-            .call(GetMediaItemsParams(cameraUuid: event.cameraUuid, mediaPage: mediaPageResult!));
+
+        // Ensure mediaPageResult is not null and has at least one file name
+        if (mediaPageResult == null || mediaPageResult!.fileNames.isEmpty) {
+          emit(GallerieFetchMediaFailedState());
+          return; // Stop further processing
+        }
+        final failureOrMediaItems = await getMediaItemsUseCase.call(GetMediaItemsParams(mediaPage: mediaPageResult!));
 
         failureOrMediaItems.fold(
           (failure) {

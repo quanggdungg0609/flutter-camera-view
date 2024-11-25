@@ -6,10 +6,9 @@ import 'package:flutter_camera_view/features/gallery/domain/entities/media_page.
 import 'package:flutter_camera_view/features/gallery/domain/repositories/gallerie.repository.dart';
 
 class GetMediaItemsParams {
-  final String cameraUuid;
   final MediaPage mediaPage;
 
-  GetMediaItemsParams({required this.cameraUuid, required this.mediaPage});
+  GetMediaItemsParams({required this.mediaPage});
 }
 
 class GetMediaItemsUseCase extends UseCase<List<MediaItem>, GetMediaItemsParams> {
@@ -19,6 +18,6 @@ class GetMediaItemsUseCase extends UseCase<List<MediaItem>, GetMediaItemsParams>
 
   @override
   Future<Either<Failure, List<MediaItem>>> call(params) async {
-    return await gallerieRepository.getMediaItems(params.cameraUuid, params.mediaPage);
+    return await gallerieRepository.getMediaItems(params.mediaPage);
   }
 }

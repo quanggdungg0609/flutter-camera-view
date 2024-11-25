@@ -13,5 +13,5 @@ abstract class GallerieRepository {
   Future<Either<Failure, List<MediaInfo>>> getMediaInfos(String cameraUuid, List<String> mediaNames, bool isVideo);
   Future<Either<Failure, List<MediaUrl>>> getMediaUrls(String cameraUuid, List<String> mediaNames, bool isVideo);
   Future<Either<Failure, List<VideoThumbnail>>> getVideoThumbnails(String cameraUuid, List<String> videoNames);
-  Future<Either<Failure, List<MediaItem>>> getMediaItems(String cameraUuid, MediaPage mediaPage);
+  Future<Either<Failure, List<MediaItem>>> getMediaItems(MediaPage mediaPage);
 }

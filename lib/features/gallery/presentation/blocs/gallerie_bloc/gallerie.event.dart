@@ -13,8 +13,3 @@ class GallerieFetchMediasEvent extends GallerieEvent {
   @override
   List<Object?> get props => [cameraUuid, page, limit, isVideo];
 }
-
-class GallerieResetStateEvent extends GallerieEvent {
-  @override
-  List<Object?> get props => [];
-}
