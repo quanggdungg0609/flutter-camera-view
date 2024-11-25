@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/media_item.entity.dart';
 import 'package:flutter_camera_view/features/gallery/presentation/blocs/gallerie_bloc/gallerie.bloc.dart';
+import 'package:flutter_camera_view/features/gallery/presentation/widgets/info_button_button.widget.dart';
 import 'package:flutter_camera_view/injection_container.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
@@ -23,7 +24,7 @@ class _ImagesGallerieWidgetState extends State<ImagesGallerieWidget> {
   final GallerieBloc _gallerieBloc = sl<GallerieBloc>();
   final PagingController<int, MediaItem> _pagingController = PagingController(firstPageKey: 1);
   final ValueNotifier<List<MediaItem>> _mediaItemsNotifier = ValueNotifier([]);
-
+  final ValueNotifier<MediaItem?> _currentMediaItemNotifier = ValueNotifier(null);
   // states
 
   @override
@@ -33,7 +34,6 @@ class _ImagesGallerieWidgetState extends State<ImagesGallerieWidget> {
   }
 
   void _requestListener(int pageKey) {
-    print("Requesting page: $pageKey for cameraUuid: ${widget.cameraUuid}");
     const pageSize = 4;
 
     _gallerieBloc.add(
@@ -57,6 +57,7 @@ class _ImagesGallerieWidgetState extends State<ImagesGallerieWidget> {
   @override
   void dispose() {
     _mediaItemsNotifier.dispose();
+    _currentMediaItemNotifier.dispose();
     _pagingController.dispose();
     _gallerieBloc.close();
     super.dispose();
@@ -72,7 +73,6 @@ class _ImagesGallerieWidgetState extends State<ImagesGallerieWidget> {
             final isLastPage = gallerieState.mediaPage.nextPage == null;
             final newItems = List<MediaItem>.from(_mediaItemsNotifier.value)..addAll(gallerieState.items);
             _mediaItemsNotifier.value = newItems;
-            print(gallerieState.mediaPage);
             if (isLastPage) {
               _pagingController.appendLastPage(gallerieState.items);
             } else {
@@ -89,6 +89,7 @@ class _ImagesGallerieWidgetState extends State<ImagesGallerieWidget> {
             itemBuilder: (pageChildBuilderContext, item, index) {
               return GestureDetector(
                 onTap: () {
+                  _currentMediaItemNotifier.value = item;
                   _showImageModal(pageChildBuilderContext, index);
                 },
                 child: Hero(
@@ -99,7 +100,7 @@ class _ImagesGallerieWidgetState extends State<ImagesGallerieWidget> {
                     child: Stack(
                       children: [
                         CachedNetworkImage(
-                          imageUrl: item.mediaUrl, // Mã hóa URL nếu cần
+                          imageUrl: item.mediaUrl,
                           placeholder: (context, url) => Container(
                             width: double.infinity,
                             height: double.infinity,
@@ -157,44 +158,96 @@ class _ImagesGallerieWidgetState extends State<ImagesGallerieWidget> {
             return Dialog(
               insetPadding: EdgeInsets.zero,
               backgroundColor: Colors.black26,
-              child: Stack(
-                children: [
-                  PhotoViewGallery.builder(
-                    itemCount: items.length,
-                    pageController: PageController(initialPage: initialIndex),
-                    builder: (context, index) {
-                      if (index == items.length - 1 && _pagingController.nextPageKey != null) {
-                        _loadNextPage();
-                      }
-                      final mediaItem = items[index];
-                      return PhotoViewGalleryPageOptions(
-                        imageProvider: CachedNetworkImageProvider(mediaItem.mediaUrl),
-                        heroAttributes: PhotoViewHeroAttributes(tag: mediaItem.mediaUrl),
-                      );
-                    },
-                    scrollPhysics: const BouncingScrollPhysics(),
-                    backgroundDecoration: const BoxDecoration(
-                      color: Colors.black26,
-                    ),
-                    onPageChanged: (index) {
-                      // Verify if is last image
-                      if (index == items.length - 1 && _pagingController.nextPageKey != null) {
-                        _loadNextPage();
-                      }
-                    },
-                  ),
-                  Positioned(
-                    top: 58,
-                    right: 5,
-                    child: IconButton(
-                      onPressed: () => context.pop(),
-                      icon: const Icon(
-                        Icons.close,
-                        color: Colors.white,
+              child: StatefulBuilder(
+                builder: (context, setModalState) {
+                  MediaItem currentMediaItem = items[initialIndex];
+                  return Stack(
+                    children: [
+                      PhotoViewGallery.builder(
+                        itemCount: items.length,
+                        pageController: PageController(initialPage: initialIndex),
+                        builder: (context, index) {
+                          if (index == items.length - 1 && _pagingController.nextPageKey != null) {
+                            _loadNextPage();
+                          }
+                          final mediaItem = items[index];
+                          return PhotoViewGalleryPageOptions(
+                            imageProvider: CachedNetworkImageProvider(mediaItem.mediaUrl),
+                            heroAttributes: PhotoViewHeroAttributes(tag: mediaItem.mediaUrl),
+                          );
+                        },
+                        scrollPhysics: const BouncingScrollPhysics(),
+                        backgroundDecoration: const BoxDecoration(
+                          color: Colors.black26,
+                        ),
+                        onPageChanged: (index) {
+                          // Verify if is last image
+                          if (index == items.length - 1 && _pagingController.nextPageKey != null) {
+                            _loadNextPage();
+                          }
+                          setModalState(
+                            () {
+                              currentMediaItem = items[index];
+                            },
+                          );
+                          // Update the currentMediaItemNotifier
+                          _currentMediaItemNotifier.value = currentMediaItem;
+                        },
                       ),
-                    ),
-                  ),
-                ],
+                      Positioned(
+                        top: 80,
+                        left: 16,
+                        right: 16,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ValueListenableBuilder(
+                                valueListenable: _currentMediaItemNotifier,
+                                builder: (context, item, _) {
+                                  return Text(
+                                    item!.mediaName,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                onPressed: () => context.pop(),
+                                icon: const Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 110,
+                        left: 15,
+                        child: ValueListenableBuilder(
+                          valueListenable: _currentMediaItemNotifier,
+                          builder: (context, currentMediaItem, _) {
+                            if (currentMediaItem == null) return const SizedBox.shrink();
+                            return InfoButtonButtonWidget(mediaItem: currentMediaItem);
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             );
           },
@@ -216,7 +269,6 @@ class _ImagesGallerieWidgetState extends State<ImagesGallerieWidget> {
   void _loadNextPage() {
     final nextPageKey = _pagingController.nextPageKey;
     if (nextPageKey != null) {
-      print("Loading next page: $nextPageKey");
       _pagingController.notifyPageRequestListeners(nextPageKey);
     }
   }
