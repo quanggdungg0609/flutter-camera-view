@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/camera.entity.dart';
-import 'package:flutter_camera_view/features/gallery/presentation/widgets/images_gallerie.widget.dart';
+import 'package:flutter_camera_view/features/gallery/presentation/widgets/images_tab_widgets/images_gallerie.widget.dart';
 
 class ResourcesTabsWidget extends StatefulWidget {
   final Camera currentCamera;

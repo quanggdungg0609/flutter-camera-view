@@ -14,7 +14,6 @@ class InfoButtonButtonWidget extends StatefulWidget {
 class _InfoButtonButtonWidgetState extends State<InfoButtonButtonWidget> {
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
-  bool _isBubbleVisible = false;
 
   void _showBubble() {
     final overlay = Overlay.of(context);
@@ -26,7 +25,7 @@ class _InfoButtonButtonWidgetState extends State<InfoButtonButtonWidget> {
             child: CompositedTransformFollower(
               link: _layerLink,
               showWhenUnlinked: false,
-              offset: const Offset(10, -110),
+              offset: const Offset(5, -120),
               child: Material(
                 color: Colors.transparent,
                 child: Container(
@@ -60,9 +59,6 @@ class _InfoButtonButtonWidgetState extends State<InfoButtonButtonWidget> {
         },
       );
       overlay.insert(_overlayEntry!);
-      setState(() {
-        _isBubbleVisible = true;
-      });
     }
   }
 
@@ -78,9 +74,6 @@ class _InfoButtonButtonWidgetState extends State<InfoButtonButtonWidget> {
   void _hideBubble() {
     _overlayEntry?.remove();
     _overlayEntry = null;
-    setState(() {
-      _isBubbleVisible = false;
-    });
   }
 
   @override
@@ -106,7 +99,11 @@ class _InfoButtonButtonWidgetState extends State<InfoButtonButtonWidget> {
           _hideBubble();
         },
         child: IconButton(
-          icon: const Icon(Icons.info, color: Colors.white),
+          icon: const Icon(
+            Icons.info,
+            color: Colors.white,
+            size: 30,
+          ),
           onPressed: () {
             // Không cần xử lý onPressed vì đã sử dụng onTapDown và onTapUp
           },

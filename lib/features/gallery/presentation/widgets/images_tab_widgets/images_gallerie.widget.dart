@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_camera_view/features/gallery/domain/entities/media_item.entity.dart';
 import 'package:flutter_camera_view/features/gallery/presentation/blocs/gallerie_bloc/gallerie.bloc.dart';
-import 'package:flutter_camera_view/features/gallery/presentation/widgets/info_button_button.widget.dart';
+import 'package:flutter_camera_view/features/gallery/presentation/widgets/images_tab_widgets/info_button_button.widget.dart';
 import 'package:flutter_camera_view/injection_container.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
