@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_camera_view/core/router/router.dart';
 import 'package:flutter_camera_view/injection_container.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:toastification/toastification.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  MediaKit.ensureInitialized();
 
   await initializeDependencies();
   runApp(const MyApp());

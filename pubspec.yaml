@@ -62,6 +62,10 @@ dependencies:
   photo_view: ^0.15.0
   flutter_portal: ^1.1.4
   intl: ^0.19.0
+  media_kit: ^1.1.11
+  media_kit_video: ^1.2.5 # For video rendering.
+  media_kit_libs_video: ^1.0.5 # Native video dependencies.
+
 
 
 dev_dependencies:

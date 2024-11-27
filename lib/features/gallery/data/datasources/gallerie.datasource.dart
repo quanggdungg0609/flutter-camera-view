@@ -53,12 +53,14 @@ class GallerieDataSourceImpl implements GallerieDataSource {
         ...mediaNames.map((name) => isVideoInfos ? 'video_names=$name' : 'image_names=$name'),
       ].join('&');
 
-      final response = await dio.get(
-        "/files/get-image-infos?$queryParams",
-      );
-      final List<dynamic> data = response.data['image_infos'];
+      final response = isVideoInfos
+          ? await dio.get("/files/get-list-video-infos?$queryParams")
+          : await dio.get(
+              "/files/get-image-infos?$queryParams",
+            );
+      final List<dynamic> data = isVideoInfos ? response.data["video_infos"] : response.data['image_infos'];
       return data.map((item) => MediaInfoModel.fromJson(item, isVideoInfos)).toList();
-    } catch (_) {
+    } catch (e) {
       throw GetMediaInfosException(message: isVideoInfos ? "Failed to get video infos" : "failed to get image infos");
     }
   }
@@ -70,9 +72,11 @@ class GallerieDataSourceImpl implements GallerieDataSource {
         'uuid=$cameraUuid',
         ...mediaNames.map((name) => isVideoUrls ? 'video_names=$name' : 'image_names=$name'),
       ].join('&');
-      final response = await dio.get(
-        "/files/get-multiple-images?$queryParams",
-      );
+      final response = isVideoUrls
+          ? await dio.get("/files/get-list-video-previews/?$queryParams")
+          : await dio.get(
+              "/files/get-multiple-images?$queryParams",
+            );
       // final List<String> result = List<String>.from(response.data['preview_urls']);
       if (mediaNames.length != (response.data["preview_urls"] as List).length) {
         throw GetMediaUrlsException(
@@ -88,7 +92,6 @@ class GallerieDataSourceImpl implements GallerieDataSource {
       });
       return result;
     } catch (e) {
-      print(e);
       throw GetMediaUrlsException(
         message: isVideoUrls ? "Failed to get video urls" : "Failed to get image urls",
       );
@@ -115,18 +118,19 @@ class GallerieDataSourceImpl implements GallerieDataSource {
         'uuid=$cameraUuid',
         ...videoNames.map((name) => 'video_names=$name'),
       ].join('&');
+
       final String url = "/files/get-list-thumbnails?$queryParams";
 
       final response = await dio.get(url);
 
-      if (videoNames.length != (response.data["thumbnais"] as List).length) {
+      if (videoNames.length != (response.data["thumbnails"] as List).length) {
         throw GetVideoThumbnaisException();
       }
       List<VideoThumbnail> result = List.generate(
         videoNames.length,
         (index) => VideoThumbnailModel(
           fileName: videoNames[index],
-          thumbnailLink: (response.data["thumbnais"] as List)[index],
+          thumbnailLink: (response.data["thumbnails"] as List)[index],
         ),
       );
       return result;
